@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import {
   listAgents,
   getAgentStatus,
+  dispatchAgentTask,
 } from "../services/agent.service.js";
 
 import { isNonEmptyString } from "../utils/validation.js";
@@ -69,6 +70,56 @@ export async function getAgent(
   } catch (error) {
 
     logger.error("getAgent failed", error);
+
+    const { statusCode, body } = toErrorResponse(error);
+
+    res.status(statusCode).json(body);
+  }
+}
+
+/*
+ * POST /api/agents/:agentId/run
+ * Body: { type: string, input?: unknown }
+ *
+ * Assigns a specific task to a specific agent and
+ * runs it in the background (202). Watch the run
+ * via GET /api/activity and GET /api/agents —
+ * the agent flips to "working" with the task id,
+ * then back to idle when it finishes.
+ */
+export async function runAgent(
+  req: Request,
+  res: Response
+): Promise<void> {
+
+  try {
+
+    const agentId = req.params.agentId;
+
+    if (!isNonEmptyString(agentId)) {
+
+      throw AppError.badRequest("Missing agent id");
+    }
+
+    const type =
+      typeof req.body?.type === "string"
+        ? req.body.type
+        : "";
+
+    const dispatched = await dispatchAgentTask(
+      agentId,
+      type,
+      req.body?.input
+    );
+
+    res.status(202).json({
+      success: true,
+      data: dispatched,
+    });
+
+  } catch (error) {
+
+    logger.error("runAgent failed", error);
 
     const { statusCode, body } = toErrorResponse(error);
 

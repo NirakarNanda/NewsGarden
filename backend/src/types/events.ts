@@ -15,6 +15,8 @@ export interface BusEvent {
 }
 
 // A persisted activity record, as returned by the API.
+// `message`/`at` are what the frontend timeline renders;
+// the raw fields stay for anyone who needs them.
 export interface ActivityEventView {
   eventId: string;
 
@@ -26,4 +28,10 @@ export interface ActivityEventView {
 
   // ISO datetime string.
   emittedAt: string;
+
+  // Human-readable one-liner, e.g. "Tech News Agent started working".
+  message: string;
+
+  // ISO datetime string (alias of emittedAt).
+  at: string;
 }

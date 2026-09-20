@@ -9,17 +9,23 @@ export type CampusAgentState =
   | "error";
 
 // What the campus UI needs to render one agent.
+// Field names match what the frontend expects:
+// status (not state) and location (not zone).
 export interface CampusAgentView {
   agentId: string;
 
   name: string;
 
+  role: string;
+
   department: string;
 
-  state: CampusAgentState;
+  status: CampusAgentState;
 
   // Campus zone from the departments config.
-  zone: string;
+  location: string;
+
+  currentTaskId?: string;
 
   // Optional map position (set by movement events).
   x?: number;

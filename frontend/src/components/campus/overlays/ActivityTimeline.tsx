@@ -22,7 +22,8 @@ const hhmm = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
 export default function ActivityTimeline() {
-  const { data } = useActivity();
+  const { data, source } = useActivity();
+  const live = source === "api";
   // API is newest-first; the timeline reads oldest → newest.
   const rows = data.slice(0, 6).reverse();
   const listRef = useRef<HTMLOListElement>(null);
@@ -58,6 +59,15 @@ export default function ActivityTimeline() {
       <h2 className="absolute text-[16px] font-normal leading-5 text-[#e6e9ff]" style={{ left: 46, top: 22 }}>
         Live Activity
       </h2>
+      <span
+        className={`absolute rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide ${
+          live ? "bg-[#4ade80]/15 text-[#4ade80]" : "bg-[#f2b04a]/15 text-[#f2b04a]"
+        }`}
+        style={{ right: 18, top: 24 }}
+        title={live ? "Connected to the backend" : "Backend unreachable — showing demo data"}
+      >
+        {live ? "LIVE" : "DEMO"}
+      </span>
 
       <ol ref={listRef} className="absolute m-0 list-none p-0" style={{ left: 18, top: 66 }}>
         {rows.map((r, i) => {

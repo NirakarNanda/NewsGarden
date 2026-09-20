@@ -10,6 +10,7 @@ import CampusMap from "./CampusMap";
 import AgentSprite from "./agents/AgentSprite";
 import EditionProgress from "./overlays/EditionProgress";
 import ActivityTimeline from "./overlays/ActivityTimeline";
+import DispatchPanel from "./overlays/DispatchPanel";
 import Sidebar from "@/components/layout/Sidebar";
 import FooterBar from "@/components/layout/FooterBar";
 
@@ -236,6 +237,7 @@ export default function Campus() {
           <div style={{ pointerEvents: "auto" }}>
             <EditionProgress />
             <ActivityTimeline />
+            <DispatchPanel />
           </div>
         </div>
 
