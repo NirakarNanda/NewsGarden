@@ -15,7 +15,9 @@
     "reset:events": "tsx src/scripts/resetEvents.ts",
     "test:judge": "tsx src/scripts/testEventJudge.ts",
     "test:research": "tsx src/scripts/testResearchAgent.ts",
-    "test:source": "tsx src/scripts/testSourceFinder.ts"
+    "test:source": "tsx src/scripts/testSourceFinder.ts",
+    "test:source-verification": "tsx src/scripts/testSourceVerification.ts",
+    "test:local-model": "tsx src/scripts/testLocalModel.ts"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
