@@ -8,12 +8,136 @@ import {
 
 import { logger } from "./utils/logger.js";
 
+import {
+  eventBus,
+} from "./engine/events/EventBus.js";
+
+import {
+  eventLogger,
+} from "./engine/events/EventLogger.js";
+
+import {
+  updateAgentState,
+} from "./repositories/agent.repository.js";
+
+import {
+  startDailyEditionJob,
+} from "./jobs/dailyEdition.job.js";
+
+import {
+  startAgentHeartbeatJob,
+} from "./jobs/agentHeartbeat.job.js";
+
+function agentIdOf(payload: unknown): string | null {
+
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "agentId" in payload &&
+    typeof (payload as { agentId: unknown }).agentId === "string"
+  ) {
+
+    return (payload as { agentId: string }).agentId;
+  }
+
+  return null;
+}
+
+function taskIdOf(payload: unknown): string | undefined {
+
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    "taskId" in payload &&
+    typeof (payload as { taskId: unknown }).taskId === "string"
+  ) {
+
+    return (payload as { taskId: string }).taskId;
+  }
+
+  return undefined;
+}
+
+/*
+ * Keeps the REST-visible agent list in sync with engine events.
+ * This is what lets the frontend campus show an agent as working
+ * the moment the brain starts one of its tasks (the V1 milestone).
+ */
+function syncAgentStatesFromEvents(): void {
+
+  eventBus.on("AGENT_STARTED", (payload) => {
+
+    const agentId = agentIdOf(payload);
+
+    if (!agentId) {
+
+      return;
+    }
+
+    updateAgentState(agentId, {
+      state: "working",
+      currentTaskId: taskIdOf(payload),
+    });
+  });
+
+  eventBus.on("AGENT_MOVEMENT_REQUESTED", (payload) => {
+
+    const agentId = agentIdOf(payload);
+
+    if (!agentId) {
+
+      return;
+    }
+
+    updateAgentState(agentId, {
+      state: "walking",
+    });
+  });
+
+  const markIdle = (payload: unknown): void => {
+
+    const agentId = agentIdOf(payload);
+
+    if (!agentId) {
+
+      return;
+    }
+
+    updateAgentState(agentId, {
+      state: "idle",
+    });
+  };
+
+  eventBus.on("AGENT_TASK_COMPLETED", markIdle);
+
+  eventBus.on("AGENT_TASK_FAILED", markIdle);
+
+  eventBus.on("AGENT_IDLE", markIdle);
+}
+
 async function startServer(): Promise<void> {
   try {
     /*
      * Connect MongoDB first.
      */
     await connectDatabase();
+
+    /*
+     * Persist every bus event to the activity feed,
+     * and mirror agent lifecycle events into the
+     * agent list served by /api/agents.
+     */
+    eventLogger.start();
+
+    syncAgentStatesFromEvents();
+
+    /*
+     * Background jobs: daily edition scheduler
+     * and the agent heartbeat for the campus UI.
+     */
+    const dailyEditionJob = startDailyEditionJob();
+
+    const heartbeatJob = startAgentHeartbeatJob();
 
     /*
      * Start Express.
@@ -29,6 +153,10 @@ async function startServer(): Promise<void> {
      */
     const shutdown = async (signal: string) => {
       logger.info(`${signal} received. Shutting down...`);
+
+      dailyEditionJob.stop();
+
+      heartbeatJob.stop();
 
       server.close(async () => {
         await disconnectDatabase();

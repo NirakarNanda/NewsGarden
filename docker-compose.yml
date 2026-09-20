@@ -1,0 +1,52 @@
+# NewsGarden — local production-like stack.
+#
+#   docker compose up --build
+#
+# AI provider notes:
+#   The backend reads AI_PROVIDER / OLLAMA_BASE_URL / OLLAMA_MODEL /
+#   GEMINI_API_KEY from backend/.env (see backend/.env.example).
+#   Ollama is expected to run on the HOST, not in compose: from inside a
+#   container, "localhost" is the container itself, so point
+#   OLLAMA_BASE_URL at the host instead, e.g.
+#     OLLAMA_BASE_URL=http://host.docker.internal:11434   (Docker Desktop)
+#   The backend defaults to the ollama provider, so no API keys are
+#   needed for a working setup.
+
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - backend/.env
+    environment:
+      # Inside the compose network the database is reachable as "mongodb".
+      MONGODB_URI: mongodb://mongodb:27017/newsgarden
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  mongo-data:

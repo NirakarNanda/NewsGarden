@@ -10,6 +10,17 @@ export async function apiGet<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`${path} -> ${res.status}`);
+  return res.json() as Promise<T>;
+}
+
 /** Accepts `[...]`, `{ data: [...] }` or `{ <key>: [...] }`. */
 export function unwrapList(raw: unknown, key: string): Record<string, unknown>[] {
   const o = raw as Record<string, unknown> | null;

@@ -17,7 +17,9 @@
     "test:research": "tsx src/scripts/testResearchAgent.ts",
     "test:source": "tsx src/scripts/testSourceFinder.ts",
     "test:source-verification": "tsx src/scripts/testSourceVerification.ts",
-    "test:local-model": "tsx src/scripts/testLocalModel.ts"
+    "test:local-model": "tsx src/scripts/testLocalModel.ts",
+    "test": "vitest run",
+    "typecheck:tests": "tsc --noEmit -p tests/tsconfig.json"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
@@ -32,6 +34,7 @@
     "@types/express": "^5.0.3",
     "@types/node": "^24.13.6",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^5.0.1"
   }
 }

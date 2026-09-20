@@ -22,6 +22,11 @@ export const env = {
   frontendUrl:
     process.env.FRONTEND_URL || "http://localhost:3000",
 
+  // Optional. When set, mutating API routes require a
+  // matching `x-api-key` header. When unset, they pass through.
+  apiKey:
+    process.env.API_KEY || "",
+
   GEMINI_API_KEY:
     process.env.GEMINI_API_KEY
 };

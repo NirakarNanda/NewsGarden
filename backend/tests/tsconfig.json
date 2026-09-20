@@ -1,0 +1,1 @@
+{"compilerOptions":{"allowSyntheticDefaultImports":true,"esModuleInterop":true,"forceConsistentCasingInFileNames":true,"module":"NodeNext","moduleResolution":"NodeNext","noEmit":true,"noImplicitAny":true,"noUncheckedIndexedAccess":true,"skipLibCheck":true,"strict":true,"target":"ES2022"},"exclude":["node_modules"],"include":["./**/*.ts"]}

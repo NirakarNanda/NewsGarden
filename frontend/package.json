@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest run",
+    "typecheck:tests": "tsc --noEmit -p tests/tsconfig.json"
   },
   "dependencies": {
     "@fontsource/lexend": "^5.2.0",

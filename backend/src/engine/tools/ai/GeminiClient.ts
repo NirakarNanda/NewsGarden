@@ -1,15 +1,23 @@
 import { GoogleGenAI } from "@google/genai";
 
-import { env } from "../../../config/env.js";
-
 export class GeminiClient {
 
-  private client: GoogleGenAI;
+  private client?: GoogleGenAI;
 
-  constructor() {
-    this.client = new GoogleGenAI({
-      apiKey: env.GEMINI_API_KEY,
-    });
+  private getClient(): GoogleGenAI {
+
+    if (!this.client) {
+
+      // The key is read at call time, so a key added to the
+      // environment after boot (or rotated) is picked up
+      // without restarting the process.
+      this.client = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+      });
+
+    }
+
+    return this.client;
   }
 
   async generateText(
@@ -17,7 +25,7 @@ export class GeminiClient {
   ): Promise<string> {
 
     const interaction =
-      await this.client.interactions.create({
+      await this.getClient().interactions.create({
         model: "gemini-3.6-flash",
 
         input: prompt,
