@@ -1,0 +1,7 @@
+{
+  "name": "@newsgarden/shared",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  }
+}

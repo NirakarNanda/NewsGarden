@@ -1,0 +1,35 @@
+{
+  "name": "newsgarden-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NewsGarden AI Newspaper Backend",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test:agent": "tsx src/scripts/testAgent.ts",
+    "test:event": "tsx src/scripts/testEventClustering.ts",
+    "inspect:events": "tsx src/scripts/inspectEvents.ts",
+    "reset:events": "tsx src/scripts/resetEvents.ts",
+    "test:judge": "tsx src/scripts/testEventJudge.ts",
+    "test:research": "tsx src/scripts/testResearchAgent.ts",
+    "test:source": "tsx src/scripts/testSourceFinder.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.23.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "mongoose": "^8.18.0",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.13.6",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
