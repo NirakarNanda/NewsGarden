@@ -1,6 +1,7 @@
 import type { AIClient } from "./AIClient.js";
 import { GeminiClient } from "./GeminiClient.js";
 import { LocalModelClient } from "./LocalModelClient.js";
+import { OpenAICompatibleClient } from "./OpenAICompatibleClient.js";
 
 export class AIService {
 
@@ -15,6 +16,13 @@ export class AIService {
 
       this.client =
         new GeminiClient();
+
+    } else if (provider === "openai") {
+
+      // Any OpenAI-compatible HTTP API
+      // (Groq, OpenRouter, Cerebras, ...).
+      this.client =
+        new OpenAICompatibleClient();
 
     } else {
 
