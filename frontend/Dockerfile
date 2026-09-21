@@ -8,6 +8,9 @@ RUN npm ci
 FROM node:20-alpine AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Available to next.config.ts rewrites() when the build bakes them.
+ARG BACKEND_INTERNAL_URL=http://localhost:4000
+ENV BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build

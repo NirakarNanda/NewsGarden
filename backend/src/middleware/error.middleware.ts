@@ -4,9 +4,11 @@ import type {
   Response,
 } from "express";
 
+import { getRequestId } from "./requestId.middleware.js";
+
 export function errorMiddleware(
   error: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ): void {
@@ -14,6 +16,9 @@ export function errorMiddleware(
 
   res.status(500).json({
     success: false,
-    message: "Internal server error",
+    error: "Internal Server Error",
+    code: "INTERNAL_ERROR",
+    path: `${req.method} ${req.originalUrl}`,
+    requestId: getRequestId(req),
   });
 }

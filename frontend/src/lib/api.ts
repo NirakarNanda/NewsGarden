@@ -1,4 +1,15 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+/*
+ * In the browser, API calls go to the relative /api/... path, which
+ * next.config.ts rewrites() proxies to the backend — no CORS involved.
+ * NEXT_PUBLIC_API_URL remains as an opt-in override for deployments where
+ * the backend lives on another origin. Server-side, fall back to the
+ * internal backend URL when no override is set.
+ */
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (typeof window === "undefined"
+    ? (process.env.BACKEND_INTERNAL_URL ?? "http://localhost:4000")
+    : "");
 export const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 
 export async function apiGet<T>(path: string): Promise<T> {

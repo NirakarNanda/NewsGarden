@@ -41,10 +41,17 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Baked into next.config.ts rewrites() at build time so the
+        # browser's /api/* calls are proxied to the backend service.
+        BACKEND_INTERNAL_URL: http://backend:4000
     restart: unless-stopped
     ports:
       - "3000:3000"
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:4000
     depends_on:
       - backend
 

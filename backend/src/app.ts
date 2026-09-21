@@ -10,6 +10,7 @@ import editionRoutes from "./routes/edition.routes.js";
 import approvalRoutes from "./routes/approval.routes.js";
 import activityRoutes from "./routes/activity.routes.js";
 
+import { requestIdMiddleware } from "./middleware/requestId.middleware.js";
 import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 
@@ -21,10 +22,25 @@ const app = express();
  * --------------------------------------------------
  */
 
+app.use(requestIdMiddleware);
+
+const allowedOrigins = new Set(env.corsOrigins);
+
 app.use(
   cors({
-    origin: env.frontendUrl,
-    credentials: true,
+    // Reflect the request origin only when it is allowlisted.
+    // Requests with no Origin (curl, server-to-server) pass through.
+    // Never combine a wildcard origin with credentials.
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.has(origin)) {
+        callback(null, origin ?? true);
+      } else {
+        callback(null, false);
+      }
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "x-api-key"],
+    maxAge: 86400,
   })
 );
 
@@ -37,6 +53,28 @@ app.use(express.urlencoded({ extended: true }));
  * API ROUTES
  * --------------------------------------------------
  */
+
+app.get("/", (_req, res) => {
+  res.json({
+    service: "NewsGarden Backend",
+    version: "1.0.0",
+    routes: [
+      "GET /api/health",
+      "GET /api/agents",
+      "POST /api/agents/:agentId/run",
+      "GET /api/agents/:agentId",
+      "GET /api/articles",
+      "GET /api/articles/:articleId",
+      "GET /api/editions",
+      "GET /api/editions/:editionId",
+      "GET /api/activity",
+      "GET /api/approval/pending",
+      "POST /api/approval/:editionId/approve",
+      "POST /api/approval/:editionId/revise",
+      "POST /api/approval/:editionId/publish",
+    ],
+  });
+});
 
 app.use("/api/health", healthRoutes);
 
