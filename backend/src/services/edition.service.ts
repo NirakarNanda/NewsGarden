@@ -92,6 +92,8 @@ export function toEditionRecord(
     articleIds: string[];
 
     stagesCompleted?: string[];
+
+    aiFallback?: boolean;
   }
 ): Edition {
 
@@ -125,6 +127,9 @@ export function toEditionRecord(
     articleIds: edition.articleIds,
 
     stagesCompleted,
+
+    aiFallback:
+      edition.aiFallback ?? false,
 
     pagesCompleted,
 

@@ -74,6 +74,7 @@ export default async function EditionPage({ params }: Params) {
         <NewsroomNav active="/newsroom/editions" />
         <div className="mx-auto max-w-xl px-6 py-24 text-center">
           <Badge tone="amber">{edition.status.replace("-", " ")}</Badge>
+          {edition.aiFallback && <Badge tone="amber">Built without AI</Badge>}
           <h1 className="mt-4 text-2xl font-semibold text-[#f2f4ff]">{edition.title}</h1>
           <p className="mt-2 text-sm text-[#b8c0dc]">
             This edition isn&apos;t published yet — check back once the newsroom approves it.
@@ -102,6 +103,11 @@ export default async function EditionPage({ params }: Params) {
     <div className="min-h-screen bg-[#0b0f1a]">
       <NewsroomNav active="/newsroom/editions" />
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+        {edition.aiFallback && (
+          <p className="mb-4">
+            <Badge tone="amber">Built without AI — offline build</Badge>
+          </p>
+        )}
         <EditionView
           title={edition.title}
           date={formatDate(edition.date) || str(edition.date)}

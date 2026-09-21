@@ -220,7 +220,10 @@ export class EmailService {
       [
         "",
         "==================================================",
-        "📧 APPROVAL NOTIFICATION (console fallback)",
+        "📧 APPROVAL NOTIFICATION — email not configured,",
+        "   showing here instead of sending.",
+        "   (Set SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS/SMTP_FROM",
+        "    and install nodemailer to send real email.)",
         `To: ${email.to}`,
         `Edition: ${email.editionTitle}`,
         `Edition ID: ${email.editionId}`,

@@ -1,4 +1,8 @@
 // What the REST API returns for an article.
+import type {
+  ArticleStatus,
+} from "@newsgarden/shared";
+
 export interface ArticleView {
   articleId: string;
 
@@ -55,13 +59,5 @@ export interface ArticleData {
   // Added after event clustering.
   eventId?: string;
 
-  status:
-    | "discovered"
-    | "researching"
-    | "writing"
-    | "drafted"
-    | "edited"
-    | "fact-checked"
-    | "ready"
-    | "published";
+  status: ArticleStatus;
 }

@@ -9,5 +9,6 @@ export async function fetchLatestEdition(): Promise<EditionSummary> {
     pagesCompleted: num(latest.pagesCompleted),
     pagesTotal: num(latest.pagesTotal),
     currentStage: num(latest.currentStage),
+    aiFallback: latest.aiFallback === true,
   };
 }

@@ -41,6 +41,11 @@ export const env = {
   apiKey:
     process.env.API_KEY || "",
 
+  // When true, kick off an edition build once the
+  // server finishes starting.
+  runOnStart:
+    process.env.RUN_ON_START === "true",
+
   GEMINI_API_KEY:
     process.env.GEMINI_API_KEY
 };

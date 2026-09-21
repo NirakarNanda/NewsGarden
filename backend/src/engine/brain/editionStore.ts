@@ -22,6 +22,8 @@ export interface EditionRecord {
 
   stagesCompleted: string[];
 
+  aiFallback: boolean;
+
   createdAt: Date;
 
   updatedAt: Date;
@@ -80,6 +82,9 @@ function toRecord(
     stagesCompleted: [
       ...(doc.stagesCompleted ?? []),
     ],
+
+    aiFallback:
+      doc.aiFallback ?? false,
 
     createdAt:
       timed.createdAt ??

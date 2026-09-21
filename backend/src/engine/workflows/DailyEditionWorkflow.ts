@@ -424,6 +424,13 @@ export class DailyEditionWorkflow {
       "approval"
     );
 
+    if (aiFallback) {
+
+      await this.editionManager.setAiFallback(
+        editionId
+      );
+    }
+
     console.log(
       `[DailyEditionWorkflow] Edition ${editionId} ready for human approval.`
     );

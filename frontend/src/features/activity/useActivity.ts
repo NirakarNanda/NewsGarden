@@ -9,7 +9,11 @@ import { fetchActivity } from "./activityApi";
 
 export function useActivity() {
   const [fallback] = useState<ActivityItem[]>(() => (USE_MOCK ? mockActivity() : []));
-  const { data, source } = useLive("activity", fetchActivity, fallback, 3000);
+  // The feed refreshes on every realtime event (throttled inside
+  // useLive), with a 30s safety poll.
+  const { data, source } = useLive("activity", fetchActivity, fallback, {
+    refreshOnEvent: () => true,
+  });
   const [extra, setExtra] = useState<ActivityItem[]>([]);
 
   // Demo only: keep the feed moving in NEXT_PUBLIC_USE_MOCK mode, where the

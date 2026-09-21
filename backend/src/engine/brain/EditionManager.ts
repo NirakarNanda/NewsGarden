@@ -70,6 +70,8 @@ export class EditionManager {
         pageIds: [],
 
         stagesCompleted: [],
+
+        aiFallback: false,
       });
 
     editionMemory.beginEdition(
@@ -184,6 +186,34 @@ export class EditionManager {
     console.log(
       `[EditionManager] Stage completed: ${stage}`
     );
+  }
+
+  /*
+   * Mark the edition as built with the offline AI
+   * fallback (AI provider unreachable). Persisted so
+   * the API/UI can label it visibly.
+   */
+  async setAiFallback(
+    editionId: string
+  ): Promise<void> {
+
+    try {
+
+      const store =
+        await getEditionStore();
+
+      await store.update(
+        editionId,
+        { aiFallback: true }
+      );
+
+    } catch (error) {
+
+      console.error(
+        `[EditionManager] Failed to persist aiFallback for ${editionId}:`,
+        error instanceof Error ? error.message : error
+      );
+    }
   }
 
   /*

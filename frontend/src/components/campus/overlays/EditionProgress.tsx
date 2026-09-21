@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Play } from "lucide-react";
 import { useEdition } from "@/features/editions/useEdition";
+import { useEditionRun } from "@/features/editions/useEditionRun";
+import { saveApprovalKey } from "@/lib/approvalKey";
 import { EDITION_STAGES } from "@/lib/constants";
 import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
@@ -20,6 +22,35 @@ export default function EditionProgress() {
   const demo = source === "mock";
   const pct = ed && ed.pagesTotal ? Math.min(100, (ed.pagesCompleted / ed.pagesTotal) * 100) : 0;
   const root = useRef<HTMLElement>(null);
+
+  // On-demand edition runs.
+  const { runState, starting, startRun } = useEditionRun();
+  const [needsKey, setNeedsKey] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
+  const [runNote, setRunNote] = useState("");
+
+  const busy = starting || runState.running;
+
+  const handleRun = async () => {
+    setRunNote("");
+    setNeedsKey(false);
+    const result = await startRun();
+    if (result === "started") setRunNote("Edition run started.");
+    else if (result === "running") setRunNote("A run is already in progress.");
+    else if (result === "needs-key") setNeedsKey(true);
+    else setRunNote("Couldn't start the run.");
+  };
+
+  const handleSaveKey = async () => {
+    saveApprovalKey(keyInput.trim());
+    setKeyInput("");
+    setNeedsKey(false);
+    const result = await startRun();
+    if (result === "started") setRunNote("Edition run started.");
+    else if (result === "needs-key") setNeedsKey(true);
+    else if (result === "running") setRunNote("A run is already in progress.");
+    else setRunNote("Couldn't start the run.");
+  };
 
   // Entrance: bar fills, rows slide in, checks pop, current stage pulses.
   useEffect(() => {
@@ -44,7 +75,73 @@ export default function EditionProgress() {
             Demo data
           </p>
         )}
+        {ed?.aiFallback && !demo && (
+          <p className="m-0 mt-1 text-[10px] uppercase tracking-[0.18em] text-[#e8b34b]">
+            Built without AI
+          </p>
+        )}
       </div>
+
+      {!demo && (
+        <div className="absolute" style={{ right: 16, top: 88 }}>
+          <button
+            type="button"
+            onClick={() => void handleRun()}
+            disabled={busy}
+            title={runState.running ? "An edition run is in progress" : "Build today's edition now"}
+            className="grid h-[28px] place-items-center gap-1 rounded-[9px] border border-[#3a4478]/60 bg-[#1d2545] px-2.5 text-[12px] text-[#e6e9ff] hover:bg-[#252f58] disabled:cursor-default disabled:opacity-60"
+          >
+            <span className="flex items-center gap-1.5">
+              <Play size={12} />
+              {starting ? "Starting…" : runState.running ? "Running…" : "Run edition"}
+            </span>
+          </button>
+          {runNote && !needsKey && (
+            <p className="m-0 mt-1 max-w-[140px] text-right text-[11px] leading-4 text-[#8f97b8]">
+              {runNote}
+            </p>
+          )}
+        </div>
+      )}
+
+      {needsKey && (
+        <div
+          className="absolute z-10 rounded-[12px] border border-white/10 bg-[#10162b] p-3 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+          style={{ right: 16, top: 122, width: 220 }}
+        >
+          <p className="m-0 text-[12px] leading-4 text-[#c9cfe8]">
+            The backend requires an approval key.
+          </p>
+          <input
+            type="password"
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+            placeholder="Approval key"
+            autoComplete="off"
+            className="mt-2 w-full rounded-lg border border-white/10 bg-[#0b0f1a] p-2 text-[12px] text-[#e6e9ff] placeholder:text-[#8f97b8]/60 focus:border-[#ffd18a]/50 focus:outline-none"
+          />
+          <div className="mt-2 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setNeedsKey(false)}
+              className="rounded-lg px-2.5 py-1.5 text-[12px] text-[#8f97b8] hover:text-[#e6e9ff]"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSaveKey()}
+              disabled={!keyInput.trim()}
+              className="rounded-lg border border-[#3a4478]/60 bg-[#1d2545] px-2.5 py-1.5 text-[12px] text-[#e6e9ff] hover:bg-[#252f58] disabled:opacity-60"
+            >
+              Save &amp; run
+            </button>
+          </div>
+          <p className="m-0 mt-1.5 text-[10px] leading-3 text-[#8f97b8]/80">
+            Kept in this tab&apos;s session storage only.
+          </p>
+        </div>
+      )}
 
       {!ed ? (
         <div className="absolute" style={{ left: 24, right: 24, top: 126 }}>

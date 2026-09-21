@@ -28,6 +28,10 @@ export interface Edition extends EditionProgress {
   articleIds: string[];
 
   stagesCompleted: string[];
+
+  // True when the edition was built while the AI
+  // provider was unreachable (offline fallback).
+  aiFallback: boolean;
 }
 
 // One slot in a page layout: text, image, or both.

@@ -70,16 +70,7 @@ async function fetchPending(): Promise<PendingEdition | null> {
   return normalizePending(rows[0] as Record<string, unknown>);
 }
 
-const APPROVAL_KEY_STORAGE = "newsgarden.approvalKey";
-
-function loadApprovalKey(): string {
-  if (typeof window === "undefined") return "";
-  return window.sessionStorage.getItem(APPROVAL_KEY_STORAGE) ?? "";
-}
-
-function authHeaders(key: string): Record<string, string> | undefined {
-  return key ? { "x-api-key": key } : undefined;
-}
+import { loadApprovalKey, saveApprovalKey, authHeaders } from "@/lib/approvalKey";
 
 type Phase =
   | { kind: "loading" }
@@ -120,10 +111,7 @@ export default function ApprovalPanel() {
 
   const saveKey = (value: string) => {
     setApprovalKey(value);
-    if (typeof window !== "undefined") {
-      if (value) window.sessionStorage.setItem(APPROVAL_KEY_STORAGE, value);
-      else window.sessionStorage.removeItem(APPROVAL_KEY_STORAGE);
-    }
+    saveApprovalKey(value);
   };
 
   const act = async (action: "approve" | "revise") => {

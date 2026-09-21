@@ -28,6 +28,18 @@ import {
   startAgentHeartbeatJob,
 } from "./jobs/agentHeartbeat.job.js";
 
+import {
+  checkAIHealth,
+} from "./services/aiHealth.service.js";
+
+import {
+  startEditionRun,
+} from "./services/editionRun.service.js";
+
+import {
+  sseClients,
+} from "./routes/events.routes.js";
+
 function agentIdOf(payload: unknown): string | null {
 
   if (
@@ -132,12 +144,36 @@ async function startServer(): Promise<void> {
     syncAgentStatesFromEvents();
 
     /*
+     * Reachability check for the configured AI provider.
+     * Never blocks startup past its own timeout; an
+     * unreachable provider means editions are built with
+     * the offline fallback and labelled as such.
+     */
+    await checkAIHealth();
+
+    /*
      * Background jobs: daily edition scheduler
      * and the agent heartbeat for the campus UI.
      */
     const dailyEditionJob = startDailyEditionJob();
 
     const heartbeatJob = startAgentHeartbeatJob();
+
+    /*
+     * Optional: build an edition as soon as the
+     * server is up (RUN_ON_START=true).
+     */
+    if (env.runOnStart) {
+
+      const { accepted } =
+        startEditionRun();
+
+      logger.info(
+        accepted
+          ? "RUN_ON_START: edition run started."
+          : "RUN_ON_START: a run was already in progress."
+      );
+    }
 
     /*
      * Start Express.
@@ -167,6 +203,22 @@ async function startServer(): Promise<void> {
       dailyEditionJob.stop();
 
       heartbeatJob.stop();
+
+      // Close SSE streams so clients reconnect
+      // instead of hanging on a dead socket.
+      for (const client of sseClients) {
+
+        try {
+
+          client.end();
+
+        } catch {
+
+          // Already gone; ignore.
+        }
+      }
+
+      sseClients.clear();
 
       server.close(async () => {
         await disconnectDatabase();

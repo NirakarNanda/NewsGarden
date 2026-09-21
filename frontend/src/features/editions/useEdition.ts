@@ -11,6 +11,8 @@ import { fetchLatestEdition } from "./editionApi";
  * exists yet (a real empty state — not an error, so the connection pill
  * stays LIVE). In demo mode (NEXT_PUBLIC_USE_MOCK=true) this returns the
  * mock edition, labelled as demo data wherever it is shown.
+ *
+ * Refreshes on edition realtime events, with a 30s safety poll.
  */
 async function fetchLatestEditionOrNull(): Promise<EditionSummary | null> {
   try {
@@ -26,5 +28,7 @@ export const useEdition = () =>
     "edition",
     fetchLatestEditionOrNull,
     USE_MOCK ? MOCK_EDITION : null,
-    5000
+    {
+      refreshOnEvent: (e) => e.type.startsWith("EDITION_"),
+    }
   );

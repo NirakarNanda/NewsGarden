@@ -18,6 +18,7 @@ interface EditionRow {
   status: string;
   pages: number;
   articles: number;
+  aiFallback: boolean;
 }
 
 function normalizeEdition(r: Record<string, unknown>): EditionRow {
@@ -30,6 +31,7 @@ function normalizeEdition(r: Record<string, unknown>): EditionRow {
     status: str(r.status, "draft"),
     pages: pageIds.length,
     articles: articleIds.length,
+    aiFallback: r.aiFallback === true,
   };
 }
 
@@ -82,7 +84,10 @@ export default async function EditionsPage() {
                       {e.articles} {e.articles === 1 ? "article" : "articles"}
                     </p>
                   </div>
-                  <Badge tone={editionTone(e.status)}>{prettyStatus(e.status)}</Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={editionTone(e.status)}>{prettyStatus(e.status)}</Badge>
+                    {e.aiFallback && <Badge tone="amber">Built without AI</Badge>}
+                  </div>
                   <ArrowRight
                     size={16}
                     className="text-[#8f97b8] transition-transform group-hover:translate-x-0.5 group-hover:text-[#f2f4ff]"

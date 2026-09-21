@@ -18,6 +18,7 @@ export const MOCK_EDITION: EditionSummary = {
   pagesCompleted: 6,
   pagesTotal: 8,
   currentStage: 2,
+  aiFallback: false,
 };
 
 /** Same cadence as the reference (13, 9, 7, 5, 3, 0 minutes ago). */

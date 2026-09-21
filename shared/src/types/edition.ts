@@ -38,6 +38,11 @@ export interface Edition {
 
   // Workflow stages completed so far, in EDITION_STAGES order.
   stagesCompleted: EditionStage[];
+
+  // True when the edition was built while the AI provider
+  // was unreachable (offline fallback content). The UI
+  // must label such editions visibly.
+  aiFallback: boolean;
 }
 
 // Progress summary the campus UI renders. currentStage indexes
@@ -50,6 +55,10 @@ export interface EditionProgress {
   pagesTotal: number;
 
   currentStage: number;
+
+  // True when the edition was built while the AI provider
+  // was unreachable (offline fallback content).
+  aiFallback: boolean;
 }
 
 // One slot in a page layout: text, image, or both.

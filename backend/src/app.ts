@@ -9,6 +9,7 @@ import articleRoutes from "./routes/article.routes.js";
 import editionRoutes from "./routes/edition.routes.js";
 import approvalRoutes from "./routes/approval.routes.js";
 import activityRoutes from "./routes/activity.routes.js";
+import eventsRoutes from "./routes/events.routes.js";
 
 import { requestIdMiddleware } from "./middleware/requestId.middleware.js";
 import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
@@ -67,6 +68,9 @@ app.get("/", (_req, res) => {
       "GET /api/articles/:articleId",
       "GET /api/editions",
       "GET /api/editions/:editionId",
+      "GET /api/editions/run",
+      "POST /api/editions/run",
+      "GET /api/events",
       "GET /api/activity",
       "GET /api/approval/pending",
       "POST /api/approval/:editionId/approve",
@@ -87,6 +91,8 @@ app.use("/api/editions", editionRoutes);
 app.use("/api/approval", approvalRoutes);
 
 app.use("/api/activity", activityRoutes);
+
+app.use("/api/events", eventsRoutes);
 
 /*
  * --------------------------------------------------

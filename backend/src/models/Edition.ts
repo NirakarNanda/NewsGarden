@@ -27,6 +27,9 @@ export interface IEdition
   // Workflow stages completed so far, in EDITION_STAGES order
   // (see @newsgarden/shared). Updated by EditionManager.
   stagesCompleted: string[];
+
+  // True when built while the AI provider was unreachable.
+  aiFallback: boolean;
 }
 
 const editionSchema =
@@ -78,6 +81,15 @@ const editionSchema =
       stagesCompleted: {
         type: [String],
         default: [],
+      },
+
+      // True when the edition was built while the
+      // AI provider was unreachable (rule-based
+      // fallback content). Surfaced so the UI can
+      // mark it visibly.
+      aiFallback: {
+        type: Boolean,
+        default: false,
       },
     },
     {
