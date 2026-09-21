@@ -34,6 +34,7 @@ import {
 
 import {
   startEditionRun,
+  cancelEditionRun,
 } from "./services/editionRun.service.js";
 
 import {
@@ -71,6 +72,30 @@ function taskIdOf(payload: unknown): string | undefined {
 }
 
 /*
+ * updateAgentState is synchronous and can throw (e.g. when the
+ * database is unreachable). These handlers run inside the event
+ * bus, so a throw here would break event delivery for every other
+ * subscriber — log and continue instead.
+ */
+function safeUpdateAgentState(
+  agentId: string,
+  update: Parameters<typeof updateAgentState>[1]
+): void {
+
+  try {
+
+    updateAgentState(agentId, update);
+
+  } catch (error) {
+
+    logger.warn(
+      `syncAgentStatesFromEvents: failed to update ${agentId}: ` +
+      (error instanceof Error ? error.message : String(error))
+    );
+  }
+}
+
+/*
  * Keeps the REST-visible agent list in sync with engine events.
  * This is what lets the frontend campus show an agent as working
  * the moment the brain starts one of its tasks (the V1 milestone).
@@ -86,7 +111,7 @@ function syncAgentStatesFromEvents(): void {
       return;
     }
 
-    updateAgentState(agentId, {
+    safeUpdateAgentState(agentId, {
       state: "working",
       currentTaskId: taskIdOf(payload),
     });
@@ -101,7 +126,7 @@ function syncAgentStatesFromEvents(): void {
       return;
     }
 
-    updateAgentState(agentId, {
+    safeUpdateAgentState(agentId, {
       state: "walking",
     });
   });
@@ -115,7 +140,7 @@ function syncAgentStatesFromEvents(): void {
       return;
     }
 
-    updateAgentState(agentId, {
+    safeUpdateAgentState(agentId, {
       state: "idle",
     });
   };
@@ -203,6 +228,10 @@ async function startServer(): Promise<void> {
       dailyEditionJob.stop();
 
       heartbeatJob.stop();
+
+      // Mark an active edition run as failed before tearing
+      // down so clients see a terminal state, not "running".
+      cancelEditionRun();
 
       // Close SSE streams so clients reconnect
       // instead of hanging on a dead socket.

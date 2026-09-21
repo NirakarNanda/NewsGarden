@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import compression from "compression";
 
 import { env } from "./config/env.js";
 
@@ -14,8 +16,14 @@ import eventsRoutes from "./routes/events.routes.js";
 import { requestIdMiddleware } from "./middleware/requestId.middleware.js";
 import { notFoundMiddleware } from "./middleware/notFound.middleware.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
+import { apiLimiter } from "./middleware/rateLimit.middleware.js";
 
 const app = express();
+
+// Behind the Next.js rewrite proxy (and Docker) the client IP
+// arrives in X-Forwarded-For; trust the first proxy hop so the
+// rate limiter keys on real client IPs.
+app.set("trust proxy", 1);
 
 /*
  * --------------------------------------------------
@@ -24,6 +32,27 @@ const app = express();
  */
 
 app.use(requestIdMiddleware);
+
+// Security headers. This is a JSON API (no HTML served),
+// so the default restrictive CSP is a safe fit.
+app.use(helmet());
+
+// Gzip/deflate responses, except the SSE stream: buffering or
+// compressing event frames breaks realtime delivery.
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.path.startsWith("/api/events")) {
+        return false;
+      }
+
+      return compression.filter(req, res);
+    },
+  })
+);
+
+// Generous global limit for the campus UI's polling/SSE usage.
+app.use("/api", apiLimiter);
 
 const allowedOrigins = new Set(env.corsOrigins);
 

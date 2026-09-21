@@ -2,6 +2,15 @@ import type { AIClient } from "./AIClient.js";
 import { GeminiClient } from "./GeminiClient.js";
 import { LocalModelClient } from "./LocalModelClient.js";
 import { OpenAICompatibleClient } from "./OpenAICompatibleClient.js";
+import { Semaphore } from "./Semaphore.js";
+
+import { env } from "../../../config/env.js";
+
+/*
+ * One gate for the whole process: every AIService instance shares
+ * it, so concurrent agents cannot collectively hammer the provider.
+ */
+const aiSlots = new Semaphore(env.aiMaxConcurrency);
 
 export class AIService {
 
@@ -35,8 +44,17 @@ export class AIService {
     prompt: string
   ): Promise<string> {
 
-    return this.client.generateText(
-      prompt
-    );
+    const release = await aiSlots.acquire();
+
+    try {
+
+      return await this.client.generateText(
+        prompt
+      );
+
+    } finally {
+
+      release();
+    }
   }
 }

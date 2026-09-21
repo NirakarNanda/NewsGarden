@@ -44,6 +44,8 @@ export interface NewsEvent {
   message?: string;
   /** ISO timestamp. */
   at?: string;
+  /** Where this event came from: the SSE stream or the 30s fallback poll. */
+  via?: "sse" | "fallback";
 }
 
 type Listener = (event: NewsEvent) => void;
@@ -147,7 +149,7 @@ async function fallbackPoll() {
       remember(id);
       if (!primed) continue; // first pass only warms the seen-set
       const event = rowToNewsEvent(r);
-      if (event) dispatch(event);
+      if (event) dispatch({ ...event, via: "fallback" });
     }
     primed = true;
     // The poll answered: the backend is reachable even though the
@@ -202,7 +204,7 @@ function ensureStream() {
       frame
     );
     if (event) {
-      dispatch(event);
+      dispatch({ ...event, via: "sse" });
       setStreamHealthy(true);
     }
   };

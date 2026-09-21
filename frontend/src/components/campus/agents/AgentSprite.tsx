@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
 import type { SpriteDef } from "@/lib/sprites";
@@ -66,7 +66,7 @@ function build(el: HTMLElement, def: SpriteDef) {
   return tl;
 }
 
-export default function AgentSprite({ def, status }: { def: SpriteDef; status?: AgentStatus }) {
+export default memo(function AgentSprite({ def, status }: { def: SpriteDef; status?: AgentStatus }) {
   const wrap = useRef<HTMLDivElement>(null);
   const img = useRef<HTMLImageElement>(null);
   const loop = useRef<gsap.core.Timeline | null>(null);
@@ -103,4 +103,4 @@ export default function AgentSprite({ def, status }: { def: SpriteDef; status?: 
       />
     </div>
   );
-}
+});

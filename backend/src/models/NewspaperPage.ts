@@ -87,6 +87,12 @@ const newspaperPageSchema =
     }
   );
 
+// Hot path: findPagesByEditionId({ editionId }) sorted by pageNumber.
+newspaperPageSchema.index({
+  editionId: 1,
+  pageNumber: 1,
+});
+
 export const NewspaperPage =
   mongoose.model<INewspaperPage>(
     "NewspaperPage",

@@ -46,6 +46,44 @@ export const env = {
   runOnStart:
     process.env.RUN_ON_START === "true",
 
+  /*
+   * Seconds before ActivityEvent documents expire via the
+   * emittedAt TTL index (default: 30 days). Set
+   * ACTIVITY_EVENT_TTL_DAYS=0 to disable expiry.
+   */
+  activityEventTtlSeconds: (() => {
+    const days = Number(
+      process.env.ACTIVITY_EVENT_TTL_DAYS
+    );
+
+    if (
+      process.env.ACTIVITY_EVENT_TTL_DAYS === "0"
+    ) {
+
+      return 0;
+    }
+
+    return Number.isFinite(days) && days > 0
+      ? Math.floor(days * 86400)
+      : 30 * 86400;
+  })(),
+
+  /*
+   * Max concurrent AI calls across the whole process.
+   * Agents share one semaphore so a workflow fan-out cannot
+   * hammer Ollama/Groq with dozens of parallel requests.
+   */
+  aiMaxConcurrency: (() => {
+
+    const raw = Number(
+      process.env.AI_MAX_CONCURRENCY
+    );
+
+    return Number.isFinite(raw) && raw > 0
+      ? Math.floor(raw)
+      : 4;
+  })(),
+
   GEMINI_API_KEY:
     process.env.GEMINI_API_KEY
 };

@@ -63,6 +63,10 @@ export function useLive<T>(
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
   const lastFetchAt = useRef(0);
+  // Serialized snapshot of the last data we committed. Polls that
+  // return identical content skip setData, so a no-op tick doesn't
+  // re-render every subscriber (the whole campus scene).
+  const lastSerialized = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     if (USE_MOCK) return;
@@ -73,11 +77,18 @@ export function useLive<T>(
       try {
         const next = await fetcherRef.current();
         if (!alive) return;
-        setData(next);
+        const serialized = JSON.stringify(next);
+        if (serialized !== lastSerialized.current) {
+          lastSerialized.current = serialized;
+          setData(next);
+        }
         setSource("api");
         reportChannel(channel, true);
       } catch {
         if (!alive) return;
+        // Reset the snapshot so the next successful fetch always
+        // commits, even if its content matches the pre-error data.
+        lastSerialized.current = undefined;
         setData(fallback);
         setSource("error");
         reportChannel(channel, false);

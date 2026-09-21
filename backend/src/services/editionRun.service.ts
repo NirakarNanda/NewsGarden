@@ -40,6 +40,33 @@ export function getEditionRunState(): EditionRunState {
   return { ...state };
 }
 
+/*
+ * Called during server shutdown. Marks an active run as failed so
+ * the campus UI shows a terminal state instead of "running"
+ * forever; the workflow's own error handling persists what it can.
+ */
+export function cancelEditionRun(): boolean {
+
+  if (!state.running) {
+
+    return false;
+  }
+
+  state = {
+    running: false,
+    status: "failed",
+    startedAt: state.startedAt,
+    finishedAt: new Date().toISOString(),
+    error: "Server shutting down.",
+  };
+
+  console.log(
+    "[editionRun] Active run cancelled by shutdown."
+  );
+
+  return true;
+}
+
 export function startEditionRun(): {
   accepted: boolean;
   state: EditionRunState;

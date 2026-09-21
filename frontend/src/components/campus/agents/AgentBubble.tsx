@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
 import type { AgentStatus } from "@/types/agent";
@@ -8,7 +8,7 @@ import type { BubbleSpec } from "@/types/campus";
 
 const INK = "#3b2d3c";
 
-export default function AgentBubble({
+export default memo(function AgentBubble({
   spec,
   text,
   status,
@@ -96,4 +96,4 @@ export default function AgentBubble({
       </div>
     </div>
   );
-}
+});

@@ -3,6 +3,8 @@ import mongoose, {
   type Document,
 } from "mongoose";
 
+import { env } from "../config/env.js";
+
 export interface IActivityEvent
   extends Document {
 
@@ -48,12 +50,21 @@ const activityEventSchema =
         type: Date,
         required: true,
         index: true,
+
+        // Old activity events expire automatically.
+        // 0 disables expiry (see ACTIVITY_EVENT_TTL_DAYS).
+        ...(env.activityEventTtlSeconds > 0
+          ? { expires: env.activityEventTtlSeconds }
+          : {}),
       },
     },
     {
       timestamps: true,
     }
   );
+
+// Replay and the SSE endpoint page newest-first.
+activityEventSchema.index({ emittedAt: -1 });
 
 export const ActivityEvent =
   mongoose.model<IActivityEvent>(

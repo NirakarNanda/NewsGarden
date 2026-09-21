@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { gsap } from "@/lib/gsap";
-import { motionOK } from "@/lib/motion";
+import { motionOK, watchVisibilityPause } from "@/lib/motion";
 import { STAGE_HEIGHT, STAGE_WIDTH } from "@/lib/constants";
 import { SPRITES, type SpriteDef } from "@/lib/sprites";
 import CampusMap from "./CampusMap";
@@ -132,6 +132,12 @@ export default function Campus() {
     setMounted(true);
     setLawn(makeLawnTile());
   }, []);
+
+  // Pause all GSAP loops while the tab is hidden (battery/CPU saver);
+  // resumes exactly where it left off on return. The stage is a fixed
+  // fullscreen layer, so no IntersectionObserver is needed - it cannot
+  // be scrolled offscreen while mounted.
+  useEffect(() => watchVisibilityPause(), []);
 
   // Track the real window size (also fires when entering/leaving full screen).
   useEffect(() => {

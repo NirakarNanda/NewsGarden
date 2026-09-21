@@ -97,6 +97,9 @@ const editionSchema =
     }
   );
 
+// Hot path: listEditions sorts newest-first.
+editionSchema.index({ date: -1 });
+
 export const Edition =
   mongoose.model<IEdition>(
     "Edition",

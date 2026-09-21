@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
 
 /** Tiny glyphs that float up from a character while `on` is true. */
-export default function Emote({
+export default memo(function Emote({
   x, y, glyph, color, on, every = 3,
 }: { x: number; y: number; glyph: string; color: string; on: boolean; every?: number }) {
   const root = useRef<HTMLDivElement>(null);
@@ -41,4 +41,4 @@ export default function Emote({
   }, [on, glyph, color, every]);
 
   return <div ref={root} style={{ position: "absolute", left: x, top: y, pointerEvents: "none" }} />;
-}
+});

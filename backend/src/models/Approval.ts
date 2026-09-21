@@ -68,6 +68,14 @@ const approvalSchema =
     }
   );
 
+// Hot path: findOne({ editionId, status }).sort({ decidedAt: -1 })
+// in the approval gate (publish/approve/revise).
+approvalSchema.index({
+  editionId: 1,
+  status: 1,
+  decidedAt: -1,
+});
+
 export const Approval =
   mongoose.model<IApproval>(
     "Approval",

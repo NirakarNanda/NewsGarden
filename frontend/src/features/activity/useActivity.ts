@@ -9,10 +9,12 @@ import { fetchActivity } from "./activityApi";
 
 export function useActivity() {
   const [fallback] = useState<ActivityItem[]>(() => (USE_MOCK ? mockActivity() : []));
-  // The feed refreshes on every realtime event (throttled inside
-  // useLive), with a 30s safety poll.
+  // The feed refreshes on every realtime SSE event (throttled inside
+  // useLive), with a 30s safety poll. Events that arrived via the
+  // fallback poll are skipped: they were just fetched from this same
+  // endpoint, so re-fetching would be a duplicate request.
   const { data, source } = useLive("activity", fetchActivity, fallback, {
-    refreshOnEvent: () => true,
+    refreshOnEvent: (e) => e.via !== "fallback",
   });
   const [extra, setExtra] = useState<ActivityItem[]>([]);
 

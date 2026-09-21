@@ -102,6 +102,14 @@ const articleSchema =
     }
   );
 
+// Hot path: listArticles filters by status/category
+// and sorts newest-first.
+articleSchema.index({
+  status: 1,
+  category: 1,
+  discoveredAt: -1,
+});
+
 export const Article =
   mongoose.model<IArticle>(
     "Article",
