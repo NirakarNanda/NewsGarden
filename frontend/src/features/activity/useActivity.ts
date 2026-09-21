@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useLive } from "@/lib/useLive";
+import { USE_MOCK } from "@/lib/api";
 import { mockActivity, DEMO_FEED } from "@/features/mock";
 import type { ActivityItem } from "@/types/events";
 import { fetchActivity } from "./activityApi";
 
 export function useActivity() {
-  const [fallback] = useState(mockActivity);
-  const { data, source } = useLive(fetchActivity, fallback, 3000);
+  const [fallback] = useState<ActivityItem[]>(() => (USE_MOCK ? mockActivity() : []));
+  const { data, source } = useLive("activity", fetchActivity, fallback, 3000);
   const [extra, setExtra] = useState<ActivityItem[]>([]);
 
-  // Demo only: keep the feed moving while the backend has no /api/activity.
+  // Demo only: keep the feed moving in NEXT_PUBLIC_USE_MOCK mode, where the
+  // panel is explicitly labelled "Demo data".
   useEffect(() => {
     if (source !== "mock") {
       setExtra([]);

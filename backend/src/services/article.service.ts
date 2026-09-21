@@ -68,6 +68,12 @@ function toArticleView(
 
     summary?: string;
 
+    headline?: string;
+
+    body?: string;
+
+    imageUrl?: string;
+
     publishedAt?: Date;
 
     discoveredAt: Date;
@@ -89,6 +95,12 @@ function toArticleView(
     source: article.source,
 
     summary: article.summary,
+
+    headline: article.headline,
+
+    body: article.body,
+
+    imageUrl: article.imageUrl,
 
     publishedAt: article.publishedAt?.toISOString(),
 

@@ -142,6 +142,16 @@ async function startServer(): Promise<void> {
     /*
      * Start Express.
      */
+    if (
+      env.nodeEnv === "production" &&
+      !env.apiKey
+    ) {
+      logger.warn(
+        "API_KEY is empty: the approval routes are unauthenticated. " +
+        "Set API_KEY in production."
+      );
+    }
+
     const server = app.listen(env.port, () => {
       logger.info(
         `NewsGarden Backend running on http://localhost:${env.port}`

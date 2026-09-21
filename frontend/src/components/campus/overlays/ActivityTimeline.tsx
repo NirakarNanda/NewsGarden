@@ -7,6 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { useActivity } from "@/features/activity/useActivity";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
+import { cx } from "@/lib/utils";
 import { ghostButton, panelBg, panelClass } from "./EditionProgress";
 
 const VISUALS: Record<string, { icon: LucideIcon; color: string }> = {
@@ -24,6 +25,7 @@ const hhmm = (iso: string) =>
 export default function ActivityTimeline() {
   const { data, source } = useActivity();
   const live = source === "api";
+  const demo = source === "mock";
   // API is newest-first; the timeline reads oldest → newest.
   const rows = data.slice(0, 6).reverse();
   const listRef = useRef<HTMLOListElement>(null);
@@ -50,25 +52,49 @@ export default function ActivityTimeline() {
     seen.current = newest;
   }, [newest]);
 
+  const badge = live
+    ? { label: "LIVE", cls: "bg-[#4ade80]/15 text-[#4ade80]", title: "Connected to the backend" }
+    : demo
+      ? {
+          label: "DEMO DATA",
+          cls: "bg-[#7aa2ff]/15 text-[#7aa2ff]",
+          title: "Demo data — NEXT_PUBLIC_USE_MOCK=true",
+        }
+      : {
+          label: "OFFLINE",
+          cls: "bg-[#f26a6a]/15 text-[#f26a6a]",
+          title: "Backend unreachable — is it running?",
+        };
+
   return (
     <section data-intro="panel" className={panelClass} style={{ left: 1255, top: 418, width: 276, height: 418, background: panelBg }}>
       <span className="absolute size-3" style={{ left: 22, top: 27 }}>
-        <span className="absolute inset-0 animate-ping rounded-full bg-[#4ade80]/60" />
-        <span className="absolute inset-0 rounded-full bg-[#4ade80] shadow-[0_0_8px_#4ade80]" />
+        <span className={cx("absolute inset-0 rounded-full", live ? "animate-ping bg-[#4ade80]/60" : demo ? "bg-[#7aa2ff]/60" : "bg-[#f26a6a]/60")} />
+        <span className={cx("absolute inset-0 rounded-full", live ? "bg-[#4ade80] shadow-[0_0_8px_#4ade80]" : demo ? "bg-[#7aa2ff]" : "bg-[#5a6285]")} />
       </span>
       <h2 className="absolute text-[16px] font-normal leading-5 text-[#e6e9ff]" style={{ left: 46, top: 22 }}>
         Live Activity
       </h2>
       <span
-        className={`absolute rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide ${
-          live ? "bg-[#4ade80]/15 text-[#4ade80]" : "bg-[#f2b04a]/15 text-[#f2b04a]"
-        }`}
+        className={cx("absolute rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide", badge.cls)}
         style={{ right: 18, top: 24 }}
-        title={live ? "Connected to the backend" : "Backend unreachable — showing demo data"}
+        title={badge.title}
       >
-        {live ? "LIVE" : "DEMO"}
+        {badge.label}
       </span>
 
+      {rows.length === 0 ? (
+        <div className="absolute" style={{ left: 18, right: 18, top: 66 }}>
+          <p className="m-0 text-[13px] text-[#c9cfe8]">
+            {demo ? "No demo activity." : live ? "No activity yet." : "Couldn't reach the backend."}
+          </p>
+          {!live && !demo && (
+            <p className="m-0 mt-1 text-[12px] leading-5 text-[#8f97b8]">
+              New activity will appear here once it&apos;s back.
+            </p>
+          )}
+        </div>
+      ) : (
       <ol ref={listRef} className="absolute m-0 list-none p-0" style={{ left: 18, top: 66 }}>
         {rows.map((r, i) => {
           const v = VISUALS[r.agentId] ?? { icon: Sparkles, color: "#b7bfe0" };
@@ -87,6 +113,7 @@ export default function ActivityTimeline() {
           );
         })}
       </ol>
+      )}
 
       <Link href="/newsroom/activity" className={ghostButton} style={{ left: 15, top: 370, width: 244, height: 34 }}>
         <span className="flex items-center gap-2">

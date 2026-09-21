@@ -1,10 +1,12 @@
 import {
-  createHash,
-} from "crypto";
+  buildPlaceholderImageUrl,
+} from "./placeholder.js";
 
 export interface GeneratedImage {
 
-  // Public URL path served by the frontend.
+  // Image location: a public URL path when a
+  // provider is configured, or a self-contained
+  // data: URI placeholder when it is not.
   path: string;
 
   // Which provider made it ("placeholder" when none).
@@ -18,8 +20,7 @@ export interface GeneratedImage {
  * Illustration generation.
  *
  * Interface-compatible stub: returns a
- * placeholder path under
- * frontend/public/illustrations when no
+ * deterministic inline SVG data: URI when no
  * image provider is configured. Reads env
  * for an optional provider key but never
  * requires one.
@@ -53,16 +54,15 @@ export class ImageGenerator {
       );
     }
 
-    const hash = createHash("md5")
-      .update(
-        `${style}:${prompt}`
-      )
-      .digest("hex")
-      .slice(0, 8);
+    const url =
+      buildPlaceholderImageUrl(
+        prompt,
+        style
+      );
 
     return {
 
-      path: `/illustrations/placeholder-${hash}.svg`,
+      path: url,
 
       provider: "placeholder",
 

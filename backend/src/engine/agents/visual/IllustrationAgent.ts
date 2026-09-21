@@ -97,7 +97,7 @@ export class IllustrationAgent
       await article.save();
 
       this.log(
-        `Illustration ready: ${image.path} (placeholder: ${image.placeholder})`
+        `Illustration ready (provider: ${image.provider}, placeholder: ${image.placeholder})`
       );
 
       return {

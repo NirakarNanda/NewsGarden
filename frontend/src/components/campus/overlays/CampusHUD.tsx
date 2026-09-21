@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sun } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
+import ConnectionPill from "@/components/ui/ConnectionPill";
 
 export default function CampusHUD() {
   const [now, setNow] = useState(() => new Date());
@@ -36,7 +37,13 @@ export default function CampusHUD() {
       className="absolute rounded-[14px] border border-white/5 bg-white/[0.03]"
       style={{ left: 11, top: 8, width: 254, height: 66, padding: "9px 14px" }}
     >
-      <div className="text-[14px] leading-5 text-[#a9b0d0]">{date}</div>
+      <div className="flex items-center justify-between">
+        <div className="text-[14px] leading-5 text-[#a9b0d0]">{date}</div>
+        {/* Sun sits at right:14 — keep the pill clear of it. */}
+        <div className="mr-7">
+          <ConnectionPill />
+        </div>
+      </div>
       <div className="mt-px leading-8 text-[#eef0ff]">
         <span className="text-[30px] font-normal tracking-[0.02em]">
           {hh}

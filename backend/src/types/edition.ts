@@ -2,6 +2,10 @@ import type {
   ArticleView,
 } from "./article.js";
 
+import type {
+  EditionProgress,
+} from "@newsgarden/shared";
+
 // The lifecycle of a newspaper edition.
 export type EditionStatus =
   | "draft"
@@ -11,9 +15,7 @@ export type EditionStatus =
   | "published"
   | "revision-requested";
 
-export interface Edition {
-  editionId: string;
-
+export interface Edition extends EditionProgress {
   title: string;
 
   // ISO date string.
@@ -24,6 +26,8 @@ export interface Edition {
   pageIds: string[];
 
   articleIds: string[];
+
+  stagesCompleted: string[];
 }
 
 // One slot in a page layout: text, image, or both.

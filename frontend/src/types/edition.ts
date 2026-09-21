@@ -1,10 +1,14 @@
 /**
  * Contract the UI expects from GET /api/editions (newest first).
- * currentStage indexes EDITION_STAGES: every stage before it renders as done.
+ * Canonical shape lives in @newsgarden/shared; this re-export keeps
+ * existing imports working until the duplicates are removed.
  */
-export interface EditionSummary {
-  editionId: string;
-  pagesCompleted: number;
-  pagesTotal: number;
-  currentStage: number;
-}
+export type {
+  EditionProgress as EditionSummary,
+  EditionStage,
+} from "@newsgarden/shared";
+
+export {
+  EDITION_STAGES,
+  ARTICLES_PER_PAGE,
+} from "@newsgarden/shared";

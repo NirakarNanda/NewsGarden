@@ -20,6 +20,8 @@ export interface EditionRecord {
 
   pageIds: string[];
 
+  stagesCompleted: string[];
+
   createdAt: Date;
 
   updatedAt: Date;
@@ -73,6 +75,10 @@ function toRecord(
 
     pageIds: [
       ...doc.pageIds,
+    ],
+
+    stagesCompleted: [
+      ...(doc.stagesCompleted ?? []),
     ],
 
     createdAt:

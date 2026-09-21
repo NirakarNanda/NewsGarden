@@ -7,6 +7,22 @@ export type EditionStatus =
   | "published"
   | "revision-requested";
 
+// Pipeline stages an edition moves through, in order.
+// Shared by the backend (stage tracking) and the frontend (progress UI).
+export const EDITION_STAGES = [
+  "discovery",
+  "editorial",
+  "visual",
+  "design",
+  "quality",
+  "approval",
+] as const;
+
+export type EditionStage = (typeof EDITION_STAGES)[number];
+
+// Default articles laid out per newspaper page.
+export const ARTICLES_PER_PAGE = 4;
+
 export interface Edition {
   editionId: string;
 
@@ -19,6 +35,21 @@ export interface Edition {
   pageIds: string[];
 
   articleIds: string[];
+
+  // Workflow stages completed so far, in EDITION_STAGES order.
+  stagesCompleted: EditionStage[];
+}
+
+// Progress summary the campus UI renders. currentStage indexes
+// EDITION_STAGES: every stage before it renders as done.
+export interface EditionProgress {
+  editionId: string;
+
+  pagesCompleted: number;
+
+  pagesTotal: number;
+
+  currentStage: number;
 }
 
 // One slot in a page layout: text, image, or both.

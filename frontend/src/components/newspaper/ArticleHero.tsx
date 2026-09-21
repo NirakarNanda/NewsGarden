@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { cx } from "@/lib/utils";
 import type { Article } from "@/types/article";
 
@@ -10,6 +13,16 @@ export default function ArticleHero({
   onOpen?: (article: Article) => void;
   className?: string;
 }) {
+  // A stored imageUrl may point at a file that no longer
+  // exists (older placeholder paths) or fail to load for
+  // any other reason. Never show a broken-image icon:
+  // fall back to a styled plate instead.
+  const [imgBroken, setImgBroken] = useState(false);
+
+  useEffect(() => {
+    setImgBroken(false);
+  }, [article.imageUrl]);
+
   return (
     <article
       onClick={onOpen ? () => onOpen(article) : undefined}
@@ -27,12 +40,28 @@ export default function ArticleHero({
           ? ` · ${new Date(article.publishedAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`
           : ""}
       </p>
-      {article.imageUrl && (
-        <figure className="mt-4 overflow-hidden rounded-sm border border-[#221c12]/15">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={article.imageUrl} alt="" className="aspect-[16/9] w-full object-cover" />
-        </figure>
-      )}
+      {article.imageUrl &&
+        (imgBroken ? (
+          <div
+            role="img"
+            aria-label={`${article.category} illustration`}
+            className="mt-4 flex aspect-[16/9] w-full items-center justify-center rounded-sm border border-[#221c12]/15 bg-gradient-to-br from-[#efe3c8] to-[#d5c096]"
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#221c12]/50">
+              {article.category}
+            </span>
+          </div>
+        ) : (
+          <figure className="mt-4 overflow-hidden rounded-sm border border-[#221c12]/15">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={article.imageUrl}
+              alt=""
+              onError={() => setImgBroken(true)}
+              className="aspect-[16/9] w-full object-cover"
+            />
+          </figure>
+        ))}
       {article.summary && (
         <p className="mt-4 font-serif text-[17px] italic leading-relaxed text-[#221c12]/85">
           {article.summary}

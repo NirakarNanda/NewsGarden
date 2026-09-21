@@ -97,7 +97,7 @@ export class ImageAgent
       await article.save();
 
       this.log(
-        `Image ready: ${image.path} (placeholder: ${image.placeholder})`
+        `Image ready (provider: ${image.provider}, placeholder: ${image.placeholder})`
       );
 
       return {

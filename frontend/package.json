@@ -12,6 +12,7 @@
   "dependencies": {
     "@fontsource/lexend": "^5.2.0",
     "@fontsource/pixelify-sans": "^5.2.0",
+    "@newsgarden/shared": "*",
     "gsap": "^3.13.0",
     "lucide-react": "^0.475.0",
     "next": "^15.5.0",

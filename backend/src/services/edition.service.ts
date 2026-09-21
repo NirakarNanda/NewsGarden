@@ -21,6 +21,15 @@ import type {
   ArticleView,
 } from "../types/article.js";
 
+import type {
+  EditionProgress,
+} from "@newsgarden/shared";
+
+import {
+  ARTICLES_PER_PAGE,
+  EDITION_STAGES,
+} from "@newsgarden/shared";
+
 export async function listEditionsService(
   limit = 20
 ): Promise<Edition[]> {
@@ -68,7 +77,7 @@ export async function getEditionWithPages(
   };
 }
 
-function toEditionRecord(
+export function toEditionRecord(
   edition: {
     editionId: string;
 
@@ -81,8 +90,25 @@ function toEditionRecord(
     pageIds: string[];
 
     articleIds: string[];
+
+    stagesCompleted?: string[];
   }
 ): Edition {
+
+  const stagesCompleted =
+    edition.stagesCompleted ?? [];
+
+  const pagesCompleted =
+    edition.pageIds.length;
+
+  // Planned page count: laid-out pages, or an estimate from the
+  // article count until layout runs.
+  const pagesTotal = Math.max(
+    pagesCompleted,
+    Math.ceil(
+      edition.articleIds.length / ARTICLES_PER_PAGE
+    )
+  );
 
   return {
 
@@ -97,7 +123,42 @@ function toEditionRecord(
     pageIds: edition.pageIds,
 
     articleIds: edition.articleIds,
+
+    stagesCompleted,
+
+    pagesCompleted,
+
+    pagesTotal,
+
+    currentStage: deriveCurrentStage(
+      edition.status,
+      stagesCompleted
+    ),
   };
+}
+
+/*
+ * Index into EDITION_STAGES. Late statuses imply the full pipeline
+ * ran, even for editions created before stage tracking existed.
+ */
+function deriveCurrentStage(
+  status: Edition["status"],
+  stagesCompleted: string[]
+): number {
+
+  if (
+    status === "in-review" ||
+    status === "approved" ||
+    status === "published" ||
+    status === "revision-requested"
+  ) {
+    return EDITION_STAGES.length;
+  }
+
+  return Math.min(
+    stagesCompleted.length,
+    EDITION_STAGES.length
+  );
 }
 
 function toNewspaperPageRecord(

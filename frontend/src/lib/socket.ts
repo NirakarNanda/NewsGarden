@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { USE_MOCK, apiGet, str, unwrapList } from "@/lib/api";
+import { reportChannel } from "@/lib/connection";
 
 /**
  * Realtime news events, polling edition.
@@ -98,8 +99,11 @@ async function poll() {
       });
     }
     primed = true;
+    reportChannel("events", true);
   } catch {
-    /* backend down or endpoint missing: stay quiet, retry next tick */
+    // Backend down or endpoint missing: the global connection pill flips
+    // to OFFLINE/DEGRADED and lib/api already warned once in dev.
+    reportChannel("events", false);
   } finally {
     inFlight = false;
   }

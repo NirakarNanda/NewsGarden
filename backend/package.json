@@ -15,7 +15,6 @@
     "reset:events": "tsx src/scripts/resetEvents.ts",
     "test:judge": "tsx src/scripts/testEventJudge.ts",
     "test:research": "tsx src/scripts/testResearchAgent.ts",
-    "test:source": "tsx src/scripts/testSourceFinder.ts",
     "test:source-verification": "tsx src/scripts/testSourceVerification.ts",
     "test:local-model": "tsx src/scripts/testLocalModel.ts",
     "test": "vitest run",
@@ -23,6 +22,7 @@
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
+    "@newsgarden/shared": "*",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",

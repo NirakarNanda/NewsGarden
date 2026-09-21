@@ -16,8 +16,9 @@ export const ghostButton =
   "absolute grid place-items-center rounded-[11px] border border-[#3a4478]/60 bg-[#1d2545] text-[14px] text-[#e6e9ff] hover:bg-[#252f58]";
 
 export default function EditionProgress() {
-  const { data: ed } = useEdition();
-  const pct = ed.pagesTotal ? Math.min(100, (ed.pagesCompleted / ed.pagesTotal) * 100) : 0;
+  const { data: ed, source } = useEdition();
+  const demo = source === "mock";
+  const pct = ed && ed.pagesTotal ? Math.min(100, (ed.pagesCompleted / ed.pagesTotal) * 100) : 0;
   const root = useRef<HTMLElement>(null);
 
   // Entrance: bar fills, rows slide in, checks pop, current stage pulses.
@@ -36,9 +37,28 @@ export default function EditionProgress() {
     <section ref={root} data-intro="panel" className={panelClass} style={{ left: 1255, top: 12, width: 276, height: 392, background: panelBg }}>
       <CampusHUD />
 
-      <h2 className="absolute text-[15px] font-normal leading-5 text-[#dfe4ff]" style={{ left: 24, top: 90 }}>
-        Today&apos;s Edition
-      </h2>
+      <div className="absolute" style={{ left: 24, top: 90 }}>
+        <h2 className="m-0 text-[15px] font-normal leading-5 text-[#dfe4ff]">Today&apos;s Edition</h2>
+        {demo && (
+          <p className="m-0 mt-1 text-[10px] uppercase tracking-[0.18em] text-[#7aa2ff]">
+            Demo data
+          </p>
+        )}
+      </div>
+
+      {!ed ? (
+        <div className="absolute" style={{ left: 24, right: 24, top: 126 }}>
+          <p className="m-0 text-[13px] leading-5 text-[#c9cfe8]">
+            {source === "error" ? "Couldn't reach the backend." : "No edition in production yet."}
+          </p>
+          {source === "error" && (
+            <p className="m-0 mt-1 text-[12px] leading-5 text-[#8f97b8]">
+              Progress will appear here once it&apos;s back.
+            </p>
+          )}
+        </div>
+      ) : (
+        <>
       <div className="absolute overflow-hidden rounded-full bg-[#2b3350]" style={{ left: 24, top: 120, width: 145, height: 9 }}>
         <div className="bar-fill h-full rounded-full bg-[#8ad299] transition-[width] duration-700" style={{ width: `${pct}%` }} />
       </div>
@@ -72,6 +92,8 @@ export default function EditionProgress() {
           View Edition <ArrowRight size={15} />
         </span>
       </Link>
+        </>
+      )}
     </section>
   );
 }

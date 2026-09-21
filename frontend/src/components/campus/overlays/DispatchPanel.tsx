@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useAgents } from "@/features/agents/useAgents";
 import { runAgentTask, TASK_TYPE_OPTIONS } from "@/features/agents/agentApi";
+import { cx } from "@/lib/utils";
 import { panelBg, panelClass } from "./EditionProgress";
 
 /**
@@ -19,6 +20,21 @@ export default function DispatchPanel() {
   const [note, setNote] = useState("");
 
   const live = source === "api";
+  const demo = source === "mock";
+  const offline = source === "error";
+  const badge = live
+    ? { label: "LIVE", cls: "bg-[#4ade80]/15 text-[#4ade80]", title: "Connected to the backend" }
+    : demo
+      ? {
+          label: "DEMO DATA",
+          cls: "bg-[#7aa2ff]/15 text-[#7aa2ff]",
+          title: "Demo data — NEXT_PUBLIC_USE_MOCK=true",
+        }
+      : {
+          label: "OFFLINE",
+          cls: "bg-[#f26a6a]/15 text-[#f26a6a]",
+          title: "Backend unreachable — is it running?",
+        };
 
   const dispatch = async () => {
     if (!agentId || busy) return;
@@ -46,16 +62,19 @@ export default function DispatchPanel() {
       <div className="absolute flex items-center gap-2" style={{ left: 18, top: 12, right: 18 }}>
         <h2 className="m-0 text-[14px] font-normal leading-5 text-[#e6e9ff]">Dispatch</h2>
         <span
-          className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide ${
-            live ? "bg-[#4ade80]/15 text-[#4ade80]" : "bg-[#f2b04a]/15 text-[#f2b04a]"
-          }`}
-          title={live ? "Connected to the backend" : "Backend unreachable — showing demo data"}
+          className={cx("ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide", badge.cls)}
+          title={badge.title}
         >
-          {live ? "LIVE" : "DEMO"}
+          {badge.label}
         </span>
       </div>
 
       <div className="absolute flex flex-col gap-1.5" style={{ left: 18, top: 38, right: 18 }}>
+        {offline && (
+          <p className="m-0 text-[11px] leading-4 text-[#f2a3a3]">
+            Backend offline — dispatch unavailable.
+          </p>
+        )}
         <select
           aria-label="Agent"
           className={selectClass}

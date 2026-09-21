@@ -23,6 +23,10 @@ export interface IEdition
   pageIds: string[];
 
   articleIds: string[];
+
+  // Workflow stages completed so far, in EDITION_STAGES order
+  // (see @newsgarden/shared). Updated by EditionManager.
+  stagesCompleted: string[];
 }
 
 const editionSchema =
@@ -67,6 +71,11 @@ const editionSchema =
       },
 
       articleIds: {
+        type: [String],
+        default: [],
+      },
+
+      stagesCompleted: {
         type: [String],
         default: [],
       },

@@ -24,6 +24,10 @@ import type {
 } from "../types/edition.js";
 
 import {
+  toEditionRecord,
+} from "./edition.service.js";
+
+import {
   logEvent,
 } from "./activity.service.js";
 
@@ -322,37 +326,5 @@ function toApprovalRecord(
     decidedBy: approval.decidedBy,
 
     decidedAt: approval.decidedAt?.toISOString(),
-  };
-}
-
-function toEditionRecord(
-  edition: {
-    editionId: string;
-
-    title: string;
-
-    date: Date;
-
-    status: Edition["status"];
-
-    pageIds: string[];
-
-    articleIds: string[];
-  }
-): Edition {
-
-  return {
-
-    editionId: edition.editionId,
-
-    title: edition.title,
-
-    date: edition.date.toISOString().slice(0, 10),
-
-    status: edition.status,
-
-    pageIds: edition.pageIds,
-
-    articleIds: edition.articleIds,
   };
 }

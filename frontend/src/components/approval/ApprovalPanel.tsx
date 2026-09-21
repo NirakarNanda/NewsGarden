@@ -70,6 +70,17 @@ async function fetchPending(): Promise<PendingEdition | null> {
   return normalizePending(rows[0] as Record<string, unknown>);
 }
 
+const APPROVAL_KEY_STORAGE = "newsgarden.approvalKey";
+
+function loadApprovalKey(): string {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(APPROVAL_KEY_STORAGE) ?? "";
+}
+
+function authHeaders(key: string): Record<string, string> | undefined {
+  return key ? { "x-api-key": key } : undefined;
+}
+
 type Phase =
   | { kind: "loading" }
   | { kind: "error"; message: string }
@@ -87,6 +98,7 @@ export default function ApprovalPanel() {
   const [showNote, setShowNote] = useState(false);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [approvalKey, setApprovalKey] = useState(loadApprovalKey);
 
   const load = useCallback(async () => {
     if (USE_MOCK) {
@@ -106,13 +118,25 @@ export default function ApprovalPanel() {
     void load();
   }, [load]);
 
+  const saveKey = (value: string) => {
+    setApprovalKey(value);
+    if (typeof window !== "undefined") {
+      if (value) window.sessionStorage.setItem(APPROVAL_KEY_STORAGE, value);
+      else window.sessionStorage.removeItem(APPROVAL_KEY_STORAGE);
+    }
+  };
+
   const act = async (action: "approve" | "revise") => {
     if (phase.kind !== "ready") return;
     setBusy(true);
     setActionError("");
     try {
       if (!USE_MOCK) {
-        await apiPost(`/api/approval/${phase.edition.editionId}/${action}`, action === "revise" ? { note } : undefined);
+        await apiPost(
+          `/api/approval/${phase.edition.editionId}/${action}`,
+          action === "revise" ? { note } : undefined,
+          { headers: authHeaders(approvalKey) }
+        );
       }
       setPhase({
         kind: "done",
@@ -120,7 +144,12 @@ export default function ApprovalPanel() {
         outcome: action === "approve" ? "approved" : "revised",
       });
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : "Action failed");
+      const message = e instanceof Error ? e.message : "Action failed";
+      setActionError(
+        message.includes("401")
+          ? "Unauthorized (401): the backend requires an approval key. Enter it below and try again."
+          : message
+      );
     } finally {
       setBusy(false);
     }
@@ -224,6 +253,26 @@ export default function ApprovalPanel() {
         )}
 
         {actionError && <p className="mt-3 text-sm text-rose-300">{actionError}</p>}
+
+        {!USE_MOCK && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <label htmlFor="approval-key" className="mb-1.5 block text-sm text-[#b8c0dc]">
+              Approval key
+            </label>
+            <input
+              id="approval-key"
+              type="password"
+              value={approvalKey}
+              onChange={(e) => saveKey(e.target.value)}
+              placeholder="Only needed if the backend sets API_KEY"
+              autoComplete="off"
+              className="w-full max-w-sm rounded-lg border border-white/10 bg-[#0b0f1a] p-2.5 text-sm text-[#e6e9ff] placeholder:text-[#8f97b8]/60 focus:border-[#ffd18a]/50 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-[#8f97b8]/80">
+              Sent as the x-api-key header. Kept in this tab&apos;s session storage only.
+            </p>
+          </div>
+        )}
       </Card>
 
       <EditionPreview title={edition.title} date={edition.date} pages={edition.pages} />

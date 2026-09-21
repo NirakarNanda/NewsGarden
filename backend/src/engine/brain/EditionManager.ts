@@ -68,6 +68,8 @@ export class EditionManager {
         articleIds: [],
 
         pageIds: [],
+
+        stagesCompleted: [],
       });
 
     editionMemory.beginEdition(
@@ -131,6 +133,39 @@ export class EditionManager {
       stage,
       taskId
     );
+
+    // Persist on the edition record so the API can report progress
+    // even after a restart (editionMemory is in-memory only).
+    try {
+
+      const store =
+        await getEditionStore();
+
+      const edition =
+        await store.findById(
+          editionId
+        );
+
+      if (edition) {
+
+        const stagesCompleted =
+          edition.stagesCompleted.includes(stage)
+            ? edition.stagesCompleted
+            : [...edition.stagesCompleted, stage];
+
+        await store.update(
+          editionId,
+          { stagesCompleted }
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        `[EditionManager] Failed to persist stage ${stage} for ${editionId}:`,
+        error instanceof Error ? error.message : error
+      );
+    }
 
     eventBus.emit(
       "EDITION_STAGE_COMPLETED",
