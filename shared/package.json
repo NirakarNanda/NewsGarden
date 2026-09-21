@@ -1,1 +1,21 @@
-{"exports":{".":{"default":"./dist/index.js","types":"./dist/index.d.ts"}},"main":"./dist/index.js","name":"@newsgarden/shared","private":true,"scripts":{"build":"tsc"},"types":"./dist/index.d.ts"}
+{
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "name": "@newsgarden/shared",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "types": "./dist/index.d.ts",
+  "devDependencies": {
+    "typescript-eslint": "^8.70.0"
+  }
+}

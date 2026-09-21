@@ -1,5 +1,6 @@
 # NewsGarden — local production-like stack.
 #
+#   cp backend/.env.example backend/.env   # once; then edit as needed
 #   docker compose up --build
 #
 # AI provider notes:
@@ -11,6 +12,12 @@
 #     OLLAMA_BASE_URL=http://host.docker.internal:11434   (Docker Desktop)
 #   The backend defaults to the ollama provider, so no API keys are
 #   needed for a working setup.
+#
+#   Prefer a containerized Ollama? Start the optional profile and point
+#   the backend at it:
+#     docker compose --profile ollama up --build
+#   then set OLLAMA_BASE_URL=http://ollama:11434 in backend/.env
+#   (and pull a model once: docker compose exec ollama ollama pull qwen3:4b).
 
 services:
   mongodb:
@@ -27,22 +34,33 @@ services:
       retries: 5
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
     restart: unless-stopped
     ports:
       - "4000:4000"
     env_file:
-      - backend/.env
+      - path: backend/.env
+        required: false
     environment:
       # Inside the compose network the database is reachable as "mongodb".
       MONGODB_URI: mongodb://mongodb:27017/newsgarden
     depends_on:
       mongodb:
         condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: ./frontend/Dockerfile
       args:
         # Baked into next.config.ts rewrites() at build time so the
         # browser's /api/* calls are proxied to the backend service.
@@ -53,7 +71,39 @@ services:
     environment:
       BACKEND_INTERNAL_URL: http://backend:4000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/api/frontend-health",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  # Optional: local Ollama in compose instead of on the host.
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["ollama"]
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   mongo-data:
+  ollama-data:

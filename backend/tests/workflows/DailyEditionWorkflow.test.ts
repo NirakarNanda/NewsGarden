@@ -1,12 +1,6 @@
-import {
-  describe,
-  expect,
-  it,
-} from "vitest";
+import { describe, expect, it } from "vitest";
 
-import {
-  DailyEditionWorkflow,
-} from "../../src/engine/workflows/DailyEditionWorkflow.js";
+import { DailyEditionWorkflow } from "../../src/engine/workflows/DailyEditionWorkflow.js";
 
 /*
  * The workflow is fully offline-safe here: every collaborator
@@ -14,13 +8,7 @@ import {
  * recording fake, so no AI provider, network, or MongoDB is touched.
  */
 
-interface TaskCall {
-  agentId: string;
-  type: string;
-}
-
 function makeFakes() {
-
   const taskTypes: string[] = [];
 
   const stages: string[] = [];
@@ -32,13 +20,7 @@ function makeFakes() {
   let taskSeq = 0;
 
   const brain = {
-
-    async createTask(
-      agentId: string,
-      type: string,
-      _input?: unknown
-    ): Promise<{ taskId: string }> {
-
+    async createTask(agentId: string, type: string, _input?: unknown): Promise<{ taskId: string }> {
       void _input;
 
       taskTypes.push(type);
@@ -48,16 +30,12 @@ function makeFakes() {
       return { taskId: `task-${taskSeq}` };
     },
 
-    async runTask(
-      taskId: string
-    ): Promise<{ success: boolean; output: unknown }> {
-
+    async runTask(taskId: string): Promise<{ success: boolean; output: unknown }> {
       void taskId;
 
       const type = taskTypes[taskTypes.length - 1];
 
       if (type === "quality-review") {
-
         return {
           success: true,
           output: { editionPassed: true },
@@ -73,41 +51,25 @@ function makeFakes() {
   };
 
   const editionManager = {
-
-    async createEdition(
-      title: string,
-      _date: Date
-    ): Promise<{ editionId: string; title: string }> {
-
+    async createEdition(title: string, _date: Date): Promise<{ editionId: string; title: string }> {
       void _date;
 
       return { editionId: "ed-1", title };
     },
 
-    async markStageComplete(
-      _editionId: string,
-      stage: string
-    ): Promise<void> {
-
+    async markStageComplete(_editionId: string, stage: string): Promise<void> {
       void _editionId;
 
       stages.push(stage);
     },
 
-    async addArticleToEdition(
-      _editionId: string,
-      _articleId: string
-    ): Promise<void> {
-
+    async addArticleToEdition(_editionId: string, _articleId: string): Promise<void> {
       void _editionId;
 
       void _articleId;
     },
 
-    async requestApproval(
-      editionId: string
-    ): Promise<{ status: string }> {
-
+    async requestApproval(editionId: string): Promise<{ status: string }> {
       approvals.push(editionId);
 
       return { status: "in-review" };
@@ -115,12 +77,7 @@ function makeFakes() {
   };
 
   const storyWorkflow = {
-
-    async run(
-      _brain: unknown,
-      articleId: string
-    ): Promise<{ aiFallback: boolean }> {
-
+    async run(_brain: unknown, articleId: string): Promise<{ aiFallback: boolean }> {
       void _brain;
 
       storyArticles.push(articleId);
@@ -130,13 +87,11 @@ function makeFakes() {
   };
 
   const pageWorkflow = {
-
     async run(
       _brain: unknown,
       _editionId: string,
-      pages: unknown[]
+      pages: unknown[],
     ): Promise<{ pageCount: number; aiFallback: boolean }> {
-
       void _brain;
 
       void _editionId;
@@ -160,9 +115,7 @@ function makeFakes() {
 }
 
 describe("DailyEditionWorkflow", () => {
-
   it("runs the edition stages in pipeline order", async () => {
-
     const fakes = makeFakes();
 
     const workflow = new DailyEditionWorkflow(fakes.deps);
@@ -207,7 +160,6 @@ describe("DailyEditionWorkflow", () => {
   });
 
   it("produces every discovered story and asks a human for approval", async () => {
-
     const fakes = makeFakes();
 
     const workflow = new DailyEditionWorkflow(fakes.deps);
@@ -227,7 +179,6 @@ describe("DailyEditionWorkflow", () => {
   });
 
   it("never publishes on its own", async () => {
-
     const fakes = makeFakes();
 
     const workflow = new DailyEditionWorkflow(fakes.deps);

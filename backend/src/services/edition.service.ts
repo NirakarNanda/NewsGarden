@@ -4,71 +4,41 @@ import {
   findPagesByEditionId,
 } from "../repositories/edition.repository.js";
 
-import {
-  findArticlesByIds,
-} from "../repositories/article.repository.js";
+import { findArticlesByIds } from "../repositories/article.repository.js";
 
 import { AppError } from "../utils/errors.js";
 
-import type {
-  Edition,
-  EditionWithPages,
-  NewspaperPage,
-  PageSlot,
-} from "../types/edition.js";
+import type { Edition, EditionWithPages, NewspaperPage, PageSlot } from "../types/edition.js";
 
-import type {
-  ArticleView,
-} from "../types/article.js";
+import type { ArticleView } from "../types/article.js";
 
-import type {
-  EditionProgress,
-} from "@newsgarden/shared";
+import { ARTICLES_PER_PAGE, EDITION_STAGES } from "@newsgarden/shared";
 
-import {
-  ARTICLES_PER_PAGE,
-  EDITION_STAGES,
-} from "@newsgarden/shared";
-
-export async function listEditionsService(
-  limit = 20
-): Promise<Edition[]> {
-
+export async function listEditionsService(limit = 20): Promise<Edition[]> {
   const editions = await listEditions(limit);
 
   return editions.map(toEditionRecord);
 }
 
-export async function getEditionById(
-  editionId: string
-): Promise<Edition> {
-
+export async function getEditionById(editionId: string): Promise<Edition> {
   const edition = await findEditionById(editionId);
 
   if (!edition) {
-
-    throw AppError.notFound(
-      `Edition not found: ${editionId}`
-    );
+    throw AppError.notFound(`Edition not found: ${editionId}`);
   }
 
   return toEditionRecord(edition);
 }
 
 // Three batched queries (edition, pages, articles): no N+1.
-export async function getEditionWithPages(
-  editionId: string
-): Promise<EditionWithPages> {
-
+export async function getEditionWithPages(editionId: string): Promise<EditionWithPages> {
   const edition = await getEditionById(editionId);
 
   const pages = await findPagesByEditionId(editionId);
 
-  const articles =
-    await findArticlesByIds(edition.articleIds);
+  const articles = await findArticlesByIds(edition.articleIds);
 
   return {
-
     ...edition,
 
     pages: pages.map(toNewspaperPageRecord),
@@ -77,43 +47,35 @@ export async function getEditionWithPages(
   };
 }
 
-export function toEditionRecord(
-  edition: {
-    editionId: string;
+export function toEditionRecord(edition: {
+  editionId: string;
 
-    title: string;
+  title: string;
 
-    date: Date;
+  date: Date;
 
-    status: Edition["status"];
+  status: Edition["status"];
 
-    pageIds: string[];
+  pageIds: string[];
 
-    articleIds: string[];
+  articleIds: string[];
 
-    stagesCompleted?: string[];
+  stagesCompleted?: string[];
 
-    aiFallback?: boolean;
-  }
-): Edition {
+  aiFallback?: boolean;
+}): Edition {
+  const stagesCompleted = edition.stagesCompleted ?? [];
 
-  const stagesCompleted =
-    edition.stagesCompleted ?? [];
-
-  const pagesCompleted =
-    edition.pageIds.length;
+  const pagesCompleted = edition.pageIds.length;
 
   // Planned page count: laid-out pages, or an estimate from the
   // article count until layout runs.
   const pagesTotal = Math.max(
     pagesCompleted,
-    Math.ceil(
-      edition.articleIds.length / ARTICLES_PER_PAGE
-    )
+    Math.ceil(edition.articleIds.length / ARTICLES_PER_PAGE),
   );
 
   return {
-
     editionId: edition.editionId,
 
     title: edition.title,
@@ -128,17 +90,13 @@ export function toEditionRecord(
 
     stagesCompleted,
 
-    aiFallback:
-      edition.aiFallback ?? false,
+    aiFallback: edition.aiFallback ?? false,
 
     pagesCompleted,
 
     pagesTotal,
 
-    currentStage: deriveCurrentStage(
-      edition.status,
-      stagesCompleted
-    ),
+    currentStage: deriveCurrentStage(edition.status, stagesCompleted),
   };
 }
 
@@ -146,11 +104,7 @@ export function toEditionRecord(
  * Index into EDITION_STAGES. Late statuses imply the full pipeline
  * ran, even for editions created before stage tracking existed.
  */
-function deriveCurrentStage(
-  status: Edition["status"],
-  stagesCompleted: string[]
-): number {
-
+function deriveCurrentStage(status: Edition["status"], stagesCompleted: string[]): number {
   if (
     status === "in-review" ||
     status === "approved" ||
@@ -160,26 +114,19 @@ function deriveCurrentStage(
     return EDITION_STAGES.length;
   }
 
-  return Math.min(
-    stagesCompleted.length,
-    EDITION_STAGES.length
-  );
+  return Math.min(stagesCompleted.length, EDITION_STAGES.length);
 }
 
-function toNewspaperPageRecord(
-  page: {
-    pageId: string;
+function toNewspaperPageRecord(page: {
+  pageId: string;
 
-    editionId: string;
+  editionId: string;
 
-    pageNumber: number;
+  pageNumber: number;
 
-    slots: PageSlot[];
-  }
-): NewspaperPage {
-
+  slots: PageSlot[];
+}): NewspaperPage {
   return {
-
     pageId: page.pageId,
 
     editionId: page.editionId,
@@ -190,30 +137,26 @@ function toNewspaperPageRecord(
   };
 }
 
-function toArticleView(
-  article: {
-    articleId: string;
+function toArticleView(article: {
+  articleId: string;
 
-    title: string;
+  title: string;
 
-    url: string;
+  url: string;
 
-    source: string;
+  source: string;
 
-    summary?: string;
+  summary?: string;
 
-    publishedAt?: Date;
+  publishedAt?: Date;
 
-    discoveredAt: Date;
+  discoveredAt: Date;
 
-    category: string;
+  category: string;
 
-    status: ArticleView["status"];
-  }
-): ArticleView {
-
+  status: ArticleView["status"];
+}): ArticleView {
   return {
-
     articleId: article.articleId,
 
     title: article.title,

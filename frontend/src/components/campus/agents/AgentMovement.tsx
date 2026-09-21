@@ -61,7 +61,6 @@ export default function AgentMovement({
   // Poll-driven moves: follow the agent record.
   useEffect(() => {
     requestMove(agent.location);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agent.location]);
 
   // Animate toward the target.

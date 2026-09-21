@@ -1,1 +1,26 @@
-{"description":"NewsGarden — AI newsroom monorepo","name":"newsgarden","private":true,"scripts":{"build":"npm run build --workspace=@newsgarden/shared && npm run build --workspace=backend && npm run build --workspace=frontend","dev":"npm run dev --workspace=backend & npm run dev --workspace=frontend","lint":"npm run lint --workspaces --if-present","test":"npm run test --workspaces --if-present","typecheck":"npm run typecheck --workspace=@newsgarden/shared --if-present && npm run typecheck --workspaces --if-present"},"version":"1.0.0","workspaces":["backend","frontend","shared"]}
+{
+  "description": "NewsGarden — AI newsroom monorepo",
+  "name": "newsgarden",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --workspace=@newsgarden/shared && npm run build --workspace=newsgarden-backend && npm run build --workspace=newsgarden-frontend",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --workspace=newsgarden-backend\" \"npm run dev --workspace=newsgarden-frontend\"",
+    "format": "prettier --write .",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspace=@newsgarden/shared --if-present && npm run typecheck --workspaces --if-present"
+  },
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend",
+    "shared"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.5",
+    "eslint": "^10.11.0",
+    "next": "^15.5.25",
+    "prettier": "^3.9.8"
+  }
+}

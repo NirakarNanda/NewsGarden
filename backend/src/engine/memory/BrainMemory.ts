@@ -1,5 +1,4 @@
 interface MemoryEntry {
-
   value: unknown;
 
   // Epoch ms. null = no expiry.
@@ -7,16 +6,9 @@ interface MemoryEntry {
 }
 
 export interface NamespacedMemory {
+  set<T>(key: string, value: T, ttlMs?: number): void;
 
-  set<T>(
-    key: string,
-    value: T,
-    ttlMs?: number
-  ): void;
-
-  get<T>(
-    key: string
-  ): T | undefined;
+  get<T>(key: string): T | undefined;
 
   delete(key: string): void;
 
@@ -27,51 +19,29 @@ export interface NamespacedMemory {
  * In-memory key/value store with TTL for
  * the brain's working state.
  *
- * Keys are namespaced ("brain:...", 
+ * Keys are namespaced ("brain:...",
  * "edition:...", "workflow:...") so areas
  * do not clobber each other.
  */
 export class BrainMemory {
+  private store: Map<string, MemoryEntry> = new Map();
 
-  private store: Map<
-    string,
-    MemoryEntry
-  > = new Map();
-
-  set<T>(
-    key: string,
-    value: T,
-    ttlMs?: number
-  ): void {
-
+  set<T>(key: string, value: T, ttlMs?: number): void {
     this.store.set(key, {
-
       value,
 
-      expiresAt:
-        typeof ttlMs === "number"
-          ? Date.now() + ttlMs
-          : null,
+      expiresAt: typeof ttlMs === "number" ? Date.now() + ttlMs : null,
     });
   }
 
-  get<T>(
-    key: string
-  ): T | undefined {
-
-    const entry =
-      this.store.get(key);
+  get<T>(key: string): T | undefined {
+    const entry = this.store.get(key);
 
     if (!entry) {
-
       return undefined;
     }
 
-    if (
-      entry.expiresAt !== null &&
-      entry.expiresAt <= Date.now()
-    ) {
-
+    if (entry.expiresAt !== null && entry.expiresAt <= Date.now()) {
       this.store.delete(key);
 
       return undefined;
@@ -81,12 +51,10 @@ export class BrainMemory {
   }
 
   delete(key: string): void {
-
     this.store.delete(key);
   }
 
   clear(): void {
-
     this.store.clear();
   }
 
@@ -96,21 +64,12 @@ export class BrainMemory {
    * expires lazily.
    */
   sweep(): number {
-
     const now = Date.now();
 
     let removed = 0;
 
-    for (const [
-      key,
-      entry,
-    ] of this.store) {
-
-      if (
-        entry.expiresAt !== null &&
-        entry.expiresAt <= now
-      ) {
-
+    for (const [key, entry] of this.store) {
+      if (entry.expiresAt !== null && entry.expiresAt <= now) {
         this.store.delete(key);
 
         removed++;
@@ -121,7 +80,6 @@ export class BrainMemory {
   }
 
   size(): number {
-
     return this.store.size;
   }
 
@@ -129,58 +87,26 @@ export class BrainMemory {
    * Scoped view so a subsystem only sees
    * its own keys.
    */
-  namespaced(
-    namespace: string
-  ): NamespacedMemory {
-
+  namespaced(namespace: string): NamespacedMemory {
     const prefix = `${namespace}:`;
 
-    const parent = this;
-
     return {
-
-      set<T>(
-        key: string,
-        value: T,
-        ttlMs?: number
-      ): void {
-
-        parent.set(
-          prefix + key,
-          value,
-          ttlMs
-        );
+      set: <T>(key: string, value: T, ttlMs?: number): void => {
+        this.set(prefix + key, value, ttlMs);
       },
 
-      get<T>(
-        key: string
-      ): T | undefined {
-
-        return parent.get<T>(
-          prefix + key
-        );
+      get: <T>(key: string): T | undefined => {
+        return this.get<T>(prefix + key);
       },
 
-      delete(key: string): void {
-
-        parent.delete(
-          prefix + key
-        );
+      delete: (key: string): void => {
+        this.delete(prefix + key);
       },
 
-      clear(): void {
-
-        for (const key of [
-          ...parent.store.keys(),
-        ]) {
-
-          if (
-            key.startsWith(prefix)
-          ) {
-
-            parent.store.delete(
-              key
-            );
+      clear: (): void => {
+        for (const key of [...this.store.keys()]) {
+          if (key.startsWith(prefix)) {
+            this.store.delete(key);
           }
         }
       },
@@ -188,5 +114,4 @@ export class BrainMemory {
   }
 }
 
-export const brainMemory =
-  new BrainMemory();
+export const brainMemory = new BrainMemory();

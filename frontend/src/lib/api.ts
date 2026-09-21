@@ -31,7 +31,7 @@ export class ApiError extends Error {
     super(
       status === null
         ? `${method} ${path} -> network error (backend unreachable?)`
-        : `${method} ${path} -> ${status}`
+        : `${method} ${path} -> ${status}`,
     );
     this.name = "ApiError";
     this.method = method;
@@ -50,12 +50,11 @@ function warnOnce(method: string, path: string, status: number | null): void {
   const key = `${method} ${path}`;
   if (warned.has(key)) return;
   warned.add(key);
-  // eslint-disable-next-line no-console
   console.warn(
     `[NewsGarden] ${key} failed` +
       (status === null
         ? " (network error — is the backend running and the /api proxy rewrite in place?)"
-        : ` (HTTP ${status})`)
+        : ` (HTTP ${status})`),
   );
 }
 
