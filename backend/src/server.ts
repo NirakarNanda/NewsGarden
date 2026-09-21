@@ -38,6 +38,10 @@ import {
 } from "./services/editionRun.service.js";
 
 import {
+  backfillPendingApprovals,
+} from "./services/approval.service.js";
+
+import {
   sseClients,
 } from "./routes/events.routes.js";
 
@@ -158,6 +162,30 @@ async function startServer(): Promise<void> {
      * Connect MongoDB first.
      */
     await connectDatabase();
+
+    /*
+     * Self-heal: editions that reached in-review before their
+     * approval record existed get a pending approval now, so
+     * the human gate keeps working. Never blocks startup.
+     */
+    try {
+
+      const backfilled =
+        await backfillPendingApprovals();
+
+      if (backfilled > 0) {
+
+        logger.info(
+          `Backfilled ${backfilled} pending approval(s) for in-review editions.`
+        );
+      }
+
+    } catch (error) {
+
+      logger.warn(
+        `Approval backfill failed: ${error instanceof Error ? error.message : error}`
+      );
+    }
 
     /*
      * Persist every bus event to the activity feed,

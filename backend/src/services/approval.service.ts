@@ -74,6 +74,8 @@ export async function getPendingApprovals(): Promise<EditionWithPages[]> {
 
 // Asks a human to approve the edition.
 // Marks the edition "in-review" and opens a pending approval.
+// Idempotent: if a pending approval already exists for the edition,
+// it is returned instead of creating a second one.
 export async function requestApproval(
   editionId: string,
   decidedBy?: string
@@ -95,15 +97,28 @@ export async function requestApproval(
     );
   }
 
-  const created = await Approval.create({
-    approvalId: newId(),
-
+  const existing = await Approval.findOne({
     editionId,
 
-    status: "pending" as ApprovalStatus,
+    status: "pending",
+  })
+    .sort({ createdAt: -1 })
+    .lean();
 
-    decidedBy,
-  });
+  if (existing) {
+
+    // Self-heal: a pending approval exists but the edition never
+    // reached in-review (interrupted flow). Fix the status.
+    if (edition.status !== "in-review") {
+
+      await setEditionStatus(editionId, "in-review");
+    }
+
+    return toApprovalRecord(existing);
+  }
+
+  const created =
+    await createPendingApproval(editionId, decidedBy);
 
   await setEditionStatus(editionId, "in-review");
 
@@ -118,6 +133,75 @@ export async function requestApproval(
   });
 
   return toApprovalRecord(created);
+}
+
+// Creates the pending Approval document. Single place where
+// pending approvals are born.
+async function createPendingApproval(
+  editionId: string,
+  decidedBy?: string
+): Promise<{
+  approvalId: string;
+
+  editionId: string;
+
+  status: ApprovalStatus;
+
+  decidedBy?: string;
+}> {
+
+  const created = await Approval.create({
+    approvalId: newId(),
+
+    editionId,
+
+    status: "pending" as ApprovalStatus,
+
+    decidedBy,
+  });
+
+  return {
+    approvalId: created.approvalId,
+
+    editionId: created.editionId,
+
+    status: created.status as ApprovalStatus,
+
+    decidedBy: created.decidedBy,
+  };
+}
+
+// Startup backfill: editions that reached in-review before the
+// approval record existed (or whose record was lost) get a pending
+// approval so the human gate keeps working. Returns how many were
+// created.
+export async function backfillPendingApprovals(): Promise<number> {
+
+  const editions = await EditionModel.find({
+    status: "in-review",
+  })
+    .select("editionId")
+    .lean();
+
+  let created = 0;
+
+  for (const edition of editions) {
+
+    const any = await Approval.findOne({
+      editionId: edition.editionId,
+    })
+      .select("_id")
+      .lean();
+
+    if (!any) {
+
+      await createPendingApproval(edition.editionId);
+
+      created += 1;
+    }
+  }
+
+  return created;
 }
 
 // Approves the edition. This does NOT publish it.
@@ -263,13 +347,51 @@ async function decideOnEdition(
 
   if (!pending) {
 
+    // Self-heal for legacy data: the edition reached in-review
+    // before any approval record existed (the old EditionManager
+    // flow). Create the pending record on the spot and continue
+    // instead of failing the human's click.
+    const anyApproval = await Approval.findOne({
+      editionId,
+    })
+      .select("_id")
+      .lean();
+
+    if (!anyApproval && edition.status === "in-review") {
+
+      const healed =
+        await createPendingApproval(editionId, input.decidedBy);
+
+      return decideOnExistingApproval(
+        healed.approvalId,
+        editionId,
+        status,
+        input
+      );
+    }
+
     throw AppError.conflict(
       `No pending approval for edition: ${editionId}`
     );
   }
 
+  return decideOnExistingApproval(
+    pending.approvalId,
+    editionId,
+    status,
+    input
+  );
+}
+
+async function decideOnExistingApproval(
+  approvalId: string,
+  editionId: string,
+  status: ApprovalStatus,
+  input: DecideInput
+): Promise<ApprovalRecord> {
+
   const decided = await Approval.findOneAndUpdate(
-    { approvalId: pending.approvalId },
+    { approvalId },
     {
       status,
 

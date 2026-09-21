@@ -23,6 +23,7 @@ process.env.API_KEY = "test-key";
 
 const findOneMock = vi.fn();
 const findOneAndUpdateMock = vi.fn();
+const createMock = vi.fn();
 const updateManyMock = vi.fn();
 const findEditionByIdMock = vi.fn();
 const setEditionStatusMock = vi.fn();
@@ -32,6 +33,7 @@ vi.mock("../../src/models/Approval.js", () => ({
   Approval: {
     findOne: (...args: unknown[]) => findOneMock(...args),
     findOneAndUpdate: (...args: unknown[]) => findOneAndUpdateMock(...args),
+    create: (...args: unknown[]) => createMock(...args),
   },
 }));
 
@@ -73,6 +75,9 @@ function chainable(doc: unknown) {
     sort: () => ({
       lean: () => Promise.resolve(doc),
     }),
+    select: () => ({
+      lean: () => Promise.resolve(doc),
+    }),
     lean: () => Promise.resolve(doc),
   };
 }
@@ -93,6 +98,10 @@ beforeEach(() => {
     chainable(query?.status === "approved" ? approvedDoc : pendingDoc)
   );
   findOneAndUpdateMock.mockImplementation(() => chainable(pendingDoc));
+  createMock.mockImplementation(async (doc: Record<string, unknown>) => ({
+    approvalId: "ap-healed",
+    ...doc,
+  }));
   updateManyMock.mockResolvedValue({ modifiedCount: 2 });
   findEditionByIdMock.mockResolvedValue({ ...editionDoc });
   setEditionStatusMock.mockImplementation(
@@ -117,7 +126,26 @@ describe("approval auth", () => {
 });
 
 describe("approval gate", () => {
-  it("approve requires a pending approval (409 when none)", async () => {
+  it("approve self-heals a missing approval record for an in-review edition (200)", async () => {
+    // Legacy data shape: in-review but no Approval document at all.
+    // The service creates the pending record on the spot and continues.
+    findOneAndUpdateMock.mockImplementation(() =>
+      chainable({
+        approvalId: "ap-healed",
+        editionId: "ed-1",
+        status: "approved",
+        decidedAt: new Date(),
+      })
+    );
+    const res = await request(app)
+      .post("/api/approval/ed-1/approve")
+      .set("x-api-key", "test-key");
+    expect(res.status).toBe(200);
+    expect(createMock).toHaveBeenCalled();
+  });
+
+  it("approve still 409s when the edition was never sent for review", async () => {
+    findEditionByIdMock.mockResolvedValue({ ...editionDoc, status: "draft" });
     const res = await request(app)
       .post("/api/approval/ed-1/approve")
       .set("x-api-key", "test-key");

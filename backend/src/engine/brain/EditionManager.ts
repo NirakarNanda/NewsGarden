@@ -24,6 +24,9 @@ import {
   EmailService,
 } from "../tools/notification/EmailService.js";
 
+import * as approvalService
+  from "../../services/approval.service.js";
+
 interface ApprovalDocLike {
 
   status?: string;
@@ -218,12 +221,20 @@ export class EditionManager {
 
   /*
    * Move the edition to human review.
-   * Sends the approval notification email
-   * (console fallback when SMTP is absent).
+   * Single source of truth: the approval service creates the pending
+   * Approval record and sets the edition in-review (idempotent).
+   * This manager then fans the event out to live SSE subscribers and
+   * sends the approval notification email (console fallback when
+   * SMTP is absent).
    */
   async requestApproval(
     editionId: string
   ): Promise<EditionRecord | null> {
+
+    const approval =
+      await approvalService.requestApproval(
+        editionId
+      );
 
     const store =
       await getEditionStore();
@@ -240,19 +251,15 @@ export class EditionManager {
       );
     }
 
-    const updated =
-      await store.update(
-        editionId,
-        {
-          status: "in-review",
-        }
-      );
-
+    // Live fan-out: approval.service only persists the event for
+    // replay; the bus is what /api/events streams to subscribers.
     eventBus.emit(
       "EDITION_READY_FOR_APPROVAL",
       {
 
         editionId,
+
+        approvalId: approval.approvalId,
 
         title: edition.title,
 
@@ -286,7 +293,7 @@ export class EditionManager {
         articleCount:
           edition.articleIds.length,
 
-        reviewUrl: `${frontendUrl}/approve/${editionId}`,
+        reviewUrl: `${frontendUrl}/edition/${editionId}`,
       }
     );
 
@@ -294,7 +301,7 @@ export class EditionManager {
       `[EditionManager] Edition "${edition.title}" requested approval.`
     );
 
-    return updated;
+    return edition;
   }
 
   /*

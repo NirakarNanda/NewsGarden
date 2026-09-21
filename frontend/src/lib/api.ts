@@ -20,23 +20,52 @@ export interface ApiOptions {
  * Every failed request throws this, so callers (and the dev console)
  * can see *which* endpoint failed and *how* — no more silent swallowing.
  * `status` is null for network-level failures (backend down, CORS block,
- * DNS, timeout).
+ * DNS, timeout). When the backend answers with its structured JSON error
+ * body ({ error, code, requestId }), those fields are exposed too.
  */
 export class ApiError extends Error {
   readonly method: string;
   readonly path: string;
   readonly status: number | null;
+  /** The backend's `error` message, when it sent one. */
+  readonly serverMessage: string | null;
+  /** The backend's machine-readable error code, when it sent one. */
+  readonly code: string | null;
+  /** The backend's request id for log correlation, when it sent one. */
+  readonly requestId: string | null;
 
-  constructor(method: string, path: string, status: number | null) {
+  constructor(
+    method: string,
+    path: string,
+    status: number | null,
+    detail?: { error?: unknown; code?: unknown; requestId?: unknown },
+  ) {
+    const serverMessage =
+      typeof detail?.error === "string" && detail.error.length > 0
+        ? detail.error
+        : null;
+    const code =
+      typeof detail?.code === "string" && detail.code.length > 0
+        ? detail.code
+        : null;
+    const requestId =
+      typeof detail?.requestId === "string" && detail.requestId.length > 0
+        ? detail.requestId
+        : null;
     super(
       status === null
         ? `${method} ${path} -> network error (backend unreachable?)`
-        : `${method} ${path} -> ${status}`,
+        : serverMessage
+          ? `${method} ${path} -> ${status}: ${serverMessage}`
+          : `${method} ${path} -> ${status}`,
     );
     this.name = "ApiError";
     this.method = method;
     this.path = path;
     this.status = status;
+    this.serverMessage = serverMessage;
+    this.code = code;
+    this.requestId = requestId;
   }
 }
 
@@ -72,10 +101,28 @@ async function request<T>(method: "GET" | "POST", path: string, init: RequestIni
   }
   if (!res.ok) {
     warnOnce(method, path, res.status);
-    throw new ApiError(method, path, res.status);
+    throw new ApiError(method, path, res.status, await readErrorDetail(res));
   }
   clearWarning(method, path);
   return res.json() as Promise<T>;
+}
+
+/** Best-effort parse of the backend's structured JSON error body. */
+async function readErrorDetail(
+  res: Response,
+): Promise<{ error?: unknown; code?: unknown; requestId?: unknown }> {
+  try {
+    const text = await res.text();
+    if (!text) return {};
+    const body = JSON.parse(text) as Record<string, unknown>;
+    return {
+      error: body.error,
+      code: body.code,
+      requestId: body.requestId,
+    };
+  } catch {
+    return {};
+  }
 }
 
 export async function apiGet<T>(path: string, opts?: ApiOptions): Promise<T> {
