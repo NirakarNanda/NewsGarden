@@ -8,8 +8,8 @@ import type {
 } from "../../../types/task.js";
 
 import {
-  GeminiClient,
-} from "../../tools/ai/GeminiClient.js";
+  AIService,
+} from "../../tools/ai/AIService.js";
 
 interface EventJudgeResult {
   sameEvent: boolean;
@@ -30,8 +30,8 @@ export class EventJudgeAgent
 
   department = "discovery";
 
-  private gemini =
-    new GeminiClient();
+  private ai =
+    new AIService();
 
   async execute(
     task: AgentTask
@@ -97,7 +97,7 @@ Rules:
 `;
 
       const response =
-        await this.gemini.generateText(
+        await this.ai.generateText(
           prompt
         );
 
