@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 import Badge from "@/components/ui/Badge";
 import { EmptyState, ErrorState } from "@/components/ui/DataState";
 import NewsroomNav from "@/components/layout/NewsroomNav";
+import EditionApprovalActions from "@/components/approval/EditionApprovalActions";
 import { editionTone, prettyStatus } from "./status";
 
 export const dynamic = "force-dynamic";
@@ -66,16 +67,19 @@ export default async function EditionsPage() {
           <div className="mt-8 rounded-lg border border-white/10 bg-white/[0.02]">
             <EmptyState
               title="No editions yet"
-              detail="The newsroom hasn't produced an edition. Once the daily run completes, it will appear here."
+              detail="The newsroom hasn't produced an edition. Run one from the campus panel's “Run edition” button, then check back here."
             />
           </div>
         ) : (
           <ul className="mt-8 space-y-3">
             {editions.map((e) => (
-              <li key={e.editionId}>
+              <li
+                key={e.editionId}
+                className="rounded-lg border border-white/10 bg-white/[0.02] transition-colors hover:border-white/20 hover:bg-white/[0.04]"
+              >
                 <Link
                   href={`/edition/${e.editionId}`}
-                  className="group flex flex-wrap items-center gap-4 rounded-lg border border-white/10 bg-white/[0.02] px-5 py-4 transition-colors hover:border-white/20 hover:bg-white/[0.04]"
+                  className="group flex flex-wrap items-center gap-4 px-5 py-4"
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-semibold text-[#f2f4ff]">{e.title}</p>
@@ -93,6 +97,11 @@ export default async function EditionsPage() {
                     className="text-[#8f97b8] transition-transform group-hover:translate-x-0.5 group-hover:text-[#f2f4ff]"
                   />
                 </Link>
+                {e.status === "in-review" && (
+                  <div className="border-t border-white/10 px-5 py-3">
+                    <EditionApprovalActions editionId={e.editionId} compact />
+                  </div>
+                )}
               </li>
             ))}
           </ul>

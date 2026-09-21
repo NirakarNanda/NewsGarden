@@ -7,7 +7,7 @@ import type { LucideIcon } from "lucide-react";
 import { useActivity } from "@/features/activity/useActivity";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
-import { cx } from "@/lib/utils";
+import { cx, timeAgo } from "@/lib/utils";
 import { ghostButton, panelBg, panelClass } from "./EditionProgress";
 
 const VISUALS: Record<string, { icon: LucideIcon; color: string }> = {
@@ -19,8 +19,10 @@ const VISUALS: Record<string, { icon: LucideIcon; color: string }> = {
   "fact-checker": { icon: ShieldCheck, color: "#c8e04a" },
 };
 
-const hhmm = (iso: string) =>
-  new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const fullDate = (iso: string) => {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
+};
 
 export default function ActivityTimeline() {
   const { data, source } = useActivity();
@@ -95,7 +97,7 @@ export default function ActivityTimeline() {
           )}
         </div>
       ) : (
-      <ol ref={listRef} className="absolute m-0 list-none p-0" style={{ left: 18, top: 66 }}>
+      <ol ref={listRef} aria-live="polite" className="absolute m-0 list-none p-0" style={{ left: 18, top: 66 }}>
         {rows.map((r, i) => {
           const v = VISUALS[r.agentId] ?? { icon: Sparkles, color: "#b7bfe0" };
           const Icon = v.icon;
@@ -106,7 +108,9 @@ export default function ActivityTimeline() {
               )}
               <Icon size={24} color={v.color} strokeWidth={1.8} className="act-icon shrink-0" />
               <div className="pl-[4px]">
-                <div className="text-[12px] leading-4 text-[#aab2d5]">{hhmm(r.at)}</div>
+                <div className="text-[12px] leading-4 text-[#aab2d5]" title={fullDate(r.at)}>
+                  {timeAgo(r.at) || "—"}
+                </div>
                 <div className="text-[12.5px] leading-4 text-[#e6e9ff]" style={{ marginTop: 1 }}>{r.message}</div>
               </div>
             </li>

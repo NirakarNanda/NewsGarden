@@ -44,7 +44,10 @@ export default async function ActivityPage() {
                 key={item.id}
                 className="flex items-baseline gap-4 rounded-lg border border-white/8 bg-white/[0.02] px-5 py-3.5"
               >
-                <span className="w-16 shrink-0 text-right text-xs text-[#8f97b8]">
+                <span
+                  className="w-16 shrink-0 text-right text-xs text-[#8f97b8]"
+                  title={Number.isNaN(new Date(item.at).getTime()) ? item.at : new Date(item.at).toLocaleString()}
+                >
                   {timeAgo(item.at) || "—"}
                 </span>
                 <div className="min-w-0">

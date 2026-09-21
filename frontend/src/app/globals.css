@@ -15,3 +15,28 @@ body {
   font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Visible keyboard focus everywhere (Phase 5 a11y). */
+:focus-visible {
+  outline: 2px solid #7aa2ff;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Compact mobile mode (< 768px): campus panels leave the scaled stage
+ * and stack as a scrollable column. The panels are absolutely
+ * positioned with fixed inline heights at desktop, so the overrides
+ * need !important to beat inline styles; inner content keeps its
+ * absolute layout because the section height is preserved. */
+@media (max-width: 767px) {
+  .campus-panel-stack > section {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 430px !important;
+    margin: 0 auto 14px !important;
+  }
+}

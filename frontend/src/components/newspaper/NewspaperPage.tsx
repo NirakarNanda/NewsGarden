@@ -38,7 +38,7 @@ export default function NewspaperPage({
             A cozy AI newsroom
           </p>
           <h1
-            className="mt-1 text-5xl font-bold tracking-tight md:text-6xl"
+            className="mt-1 text-balance text-5xl font-bold tracking-tight md:text-6xl"
             style={{ fontFamily: "var(--font-pixel)" }}
           >
             {title}

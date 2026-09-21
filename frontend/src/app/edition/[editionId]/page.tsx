@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { apiGet, str } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import type { Edition, NewspaperPage } from "@newsgarden/shared";
@@ -10,6 +11,7 @@ import Badge from "@/components/ui/Badge";
 import { ErrorState } from "@/components/ui/DataState";
 import NewsroomNav from "@/components/layout/NewsroomNav";
 import EditionView from "@/components/newspaper/EditionView";
+import EditionApprovalActions from "@/components/approval/EditionApprovalActions";
 
 // Rendered per request: the edition is live newsroom data.
 export const dynamic = "force-dynamic";
@@ -79,6 +81,11 @@ export default async function EditionPage({ params }: Params) {
           <p className="mt-2 text-sm text-[#b8c0dc]">
             This edition isn&apos;t published yet — check back once the newsroom approves it.
           </p>
+          {edition.status === "in-review" && (
+            <div className="mt-6 text-left">
+              <EditionApprovalActions editionId={edition.editionId} />
+            </div>
+          )}
           <Link
             href="/newsroom/editions"
             className="mt-6 inline-block rounded-md border border-white/15 px-4 py-2 text-sm text-[#f2f4ff] transition-colors hover:bg-white/5"
@@ -103,6 +110,13 @@ export default async function EditionPage({ params }: Params) {
     <div className="min-h-screen bg-[#0b0f1a]">
       <NewsroomNav active="/newsroom/editions" />
       <main className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+        <Link
+          href="/newsroom/editions"
+          className="mb-5 inline-flex items-center gap-1.5 text-sm text-[#b8c0dc] transition-colors hover:text-[#f2f4ff]"
+        >
+          <ArrowLeft size={15} />
+          All editions
+        </Link>
         {edition.aiFallback && (
           <p className="mb-4">
             <Badge tone="amber">Built without AI — offline build</Badge>

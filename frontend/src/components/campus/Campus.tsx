@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { Maximize2, Minimize2 } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 import { motionOK, watchVisibilityPause } from "@/lib/motion";
@@ -8,6 +9,7 @@ import { STAGE_HEIGHT, STAGE_WIDTH } from "@/lib/constants";
 import { SPRITES, type SpriteDef } from "@/lib/sprites";
 import CampusMap from "./CampusMap";
 import AgentSprite from "./agents/AgentSprite";
+import TextAgentList from "./TextAgentList";
 import EditionProgress from "./overlays/EditionProgress";
 import ActivityTimeline from "./overlays/ActivityTimeline";
 import DispatchPanel from "./overlays/DispatchPanel";
@@ -124,6 +126,7 @@ function lawnDecor(extra: number): SpriteDef[] {
 export default function Campus() {
   const [mounted, setMounted] = useState(false);
   const [isFull, setIsFull] = useState(false);
+  const [textMode, setTextMode] = useState(false);
   const [vp, setVp] = useState({ w: STAGE_WIDTH, h: STAGE_HEIGHT });
   const [lawn, setLawn] = useState<string | null>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -188,6 +191,150 @@ export default function Campus() {
 
   const frame = { position: "absolute", left: 0, top: 0, width: STAGE_WIDTH, height: STAGE_HEIGHT } as const;
 
+  // Compact mode: below ~768px the absolute right-edge panels would
+  // overlap the scene, so the stage becomes a letterboxed strip and
+  // the panels stack in a scrollable column underneath.
+  const narrow = vp.w < 768;
+
+  // The visual scene (lawn, decor, building) — campus art and sprite
+  // coordinates are untouched; this is just the existing JSX factored
+  // out so desktop and mobile renders share it.
+  const scene = (
+    <>
+      {/* Lawn, full window */}
+      <div
+        data-intro="lawn"
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundColor: GRASS.base,
+          backgroundImage: lawn ? `url(${lawn})` : undefined,
+          backgroundSize: "256px 256px",
+          imageRendering: "pixelated",
+        }}
+      >
+        {/* soft vignette toward the window edges */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(ellipse at center, transparent 55%, rgba(8,20,24,0.4) 100%)",
+          }}
+        />
+      </div>
+
+      {/* Trees and bushes on the lawn */}
+      {decor.map((d, i) => (
+        <AgentSprite key={`${d.id}-${i}`} def={d} />
+      ))}
+
+      {/* The campus building, centred and cropped to remove baked-in UI */}
+      <div style={{ ...frame, transform: `translateX(${Math.round(extraX / 2)}px)`, clipPath: BUILDING_CLIP }}>
+        <CampusMap />
+      </div>
+    </>
+  );
+
+  // Text-only agent view: painted over the scene but under the
+  // sidebar/panels/footer, which stay reachable above it.
+  const textOverlay = textMode ? (
+    <div
+      role="region"
+      aria-label="Agents, text-only view"
+      className="absolute inset-0 overflow-y-auto bg-[#0b0f1a]/95"
+    >
+      <TextAgentList />
+    </div>
+  ) : null;
+
+  const viewToggle = (
+    <button
+      type="button"
+      onClick={() => setTextMode((m) => !m)}
+      aria-pressed={textMode}
+      title={textMode ? "Back to the visual campus scene" : "Text-only agent list"}
+      className="grid h-9 place-items-center rounded-lg border border-white/10 bg-[#141b29]/80 px-3 text-[13px] text-[#dfe4ff] opacity-80 backdrop-blur transition hover:opacity-100"
+    >
+      {textMode ? "Scene view" : "Text view"}
+    </button>
+  );
+
+  const fullscreenButton = (
+    <button
+      type="button"
+      onClick={toggleFullscreen}
+      aria-label={isFull ? "Exit full screen" : "Enter full screen"}
+      title={isFull ? "Exit full screen" : "Full screen"}
+      className="grid size-9 place-items-center rounded-lg border border-white/10 bg-[#141b29]/80 text-[#dfe4ff] opacity-60 backdrop-blur transition hover:opacity-100"
+    >
+      {isFull ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+    </button>
+  );
+
+  if (narrow) {
+    const mu = vp.w / STAGE_WIDTH;
+    return (
+      <div className="fixed inset-0 overflow-y-auto" style={{ background: GRASS.base }}>
+        {/* Letterboxed scene strip */}
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            aspectRatio: `${STAGE_WIDTH} / ${STAGE_HEIGHT}`,
+            overflow: "hidden",
+          }}
+        >
+          <div
+            ref={stage}
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width: STAGE_WIDTH,
+              height: STAGE_HEIGHT,
+              transform: `scale(${mu})`,
+              transformOrigin: "0 0",
+              overflow: "hidden",
+            }}
+          >
+            {scene}
+            {textOverlay}
+          </div>
+        </div>
+
+        {/* Simple nav replaces the absolute sidebar in compact mode */}
+        <nav aria-label="Primary" className="flex gap-1 overflow-x-auto px-3 py-2">
+          {[
+            { label: "Office", href: "/" },
+            { label: "Agents", href: "/newsroom/agents" },
+            { label: "Editions", href: "/newsroom/editions" },
+            { label: "Activity", href: "/newsroom/activity" },
+          ].map(({ label, href }) => (
+            <Link
+              key={href + label}
+              href={href}
+              className="shrink-0 rounded-lg px-3 py-2 text-[13px] text-[#b8c0dc] hover:bg-white/5 hover:text-[#f2f4ff]"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Panels stacked — .campus-panel-stack CSS makes each section static */}
+        <div className="campus-panel-stack px-3 pb-24">
+          <EditionProgress />
+          <ActivityTimeline />
+          <DispatchPanel />
+        </div>
+
+        <div className="fixed right-3 bottom-3 z-50 flex items-center gap-2">
+          {viewToggle}
+          {fullscreenButton}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 overflow-hidden" style={{ background: GRASS.base }}>
       <div
@@ -203,37 +350,9 @@ export default function Campus() {
           overflow: "hidden",
         }}
       >
-        {/* Lawn, full window */}
-        <div
-          data-intro="lawn"
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: GRASS.base,
-            backgroundImage: lawn ? `url(${lawn})` : undefined,
-            backgroundSize: "256px 256px",
-            imageRendering: "pixelated",
-          }}
-        >
-          {/* soft vignette toward the window edges */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(ellipse at center, transparent 55%, rgba(8,20,24,0.4) 100%)",
-            }}
-          />
-        </div>
+        {scene}
 
-        {/* Trees and bushes on the lawn */}
-        {decor.map((d, i) => (
-          <AgentSprite key={`${d.id}-${i}`} def={d} />
-        ))}
-
-        {/* The campus building, centred and cropped to remove baked-in UI */}
-        <div style={{ ...frame, transform: `translateX(${Math.round(extraX / 2)}px)`, clipPath: BUILDING_CLIP }}>
-          <CampusMap />
-        </div>
+        {textOverlay}
 
         {/* Left edge */}
         <Sidebar />
@@ -283,15 +402,10 @@ export default function Campus() {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        aria-label={isFull ? "Exit full screen" : "Enter full screen"}
-        title={isFull ? "Exit full screen" : "Full screen"}
-        className="fixed right-3 bottom-3 z-50 grid size-9 place-items-center rounded-lg border border-white/10 bg-[#141b29]/80 text-[#dfe4ff] opacity-60 backdrop-blur transition hover:opacity-100"
-      >
-        {isFull ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-      </button>
+      <div className="fixed right-3 bottom-3 z-50 flex items-center gap-2">
+        {viewToggle}
+        {fullscreenButton}
+      </div>
     </div>
   );
 }

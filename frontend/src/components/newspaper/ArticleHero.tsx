@@ -31,7 +31,7 @@ export default function ArticleHero({
       <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.25em] text-[#8a6d3b]">
         {article.category}
       </p>
-      <h2 className="font-serif text-4xl font-black leading-tight text-[#221c12] md:text-5xl">
+      <h2 className="text-balance font-serif text-4xl font-black leading-tight text-[#221c12] md:text-5xl">
         {article.title}
       </h2>
       <p className="mt-3 text-xs uppercase tracking-widest text-[#221c12]/50">
@@ -70,7 +70,14 @@ export default function ArticleHero({
       {article.body && (
         <div className="mt-4 columns-1 gap-8 text-[14px] leading-relaxed text-[#221c12]/80 md:columns-2">
           {article.body.split("\n\n").map((para, i) => (
-            <p key={i} className="mb-3 break-inside-avoid">
+            <p
+              key={i}
+              className={cx(
+                "mb-3 break-inside-avoid",
+                i === 0 &&
+                  "first-letter:float-left first-letter:mr-1.5 first-letter:font-serif first-letter:text-[2.6em] first-letter:font-black first-letter:leading-[0.85] first-letter:text-[#221c12]",
+              )}
+            >
               {para}
             </p>
           ))}
