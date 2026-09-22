@@ -91,7 +91,7 @@ function clearWarning(method: string, path: string): void {
   warned.delete(`${method} ${path}`);
 }
 
-async function request<T>(method: "GET" | "POST", path: string, init: RequestInit): Promise<T> {
+async function request<T>(method: "GET" | "POST" | "DELETE", path: string, init: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, init);
@@ -138,6 +138,14 @@ export async function apiPost<T>(path: string, body?: unknown, opts?: ApiOptions
     method: "POST",
     headers: { "Content-Type": "application/json", ...opts?.headers },
     body: body === undefined ? undefined : JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
+  });
+}
+
+export async function apiDelete<T>(path: string, opts?: ApiOptions): Promise<T> {
+  return request<T>("DELETE", path, {
+    method: "DELETE",
+    headers: opts?.headers,
     signal: AbortSignal.timeout(8000),
   });
 }

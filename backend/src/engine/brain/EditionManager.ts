@@ -128,6 +128,41 @@ export class EditionManager {
     );
   }
 
+  /*
+   * Replace the edition's article/page lists wholesale. Used after
+   * quality review when failed articles are excluded and the pages
+   * are re-laid-out from the passing articles only.
+   */
+  async replaceEditionPages(
+    editionId: string,
+    articleIds: string[],
+    pageIds: string[]
+  ): Promise<EditionRecord | null> {
+
+    const store =
+      await getEditionStore();
+
+    const edition =
+      await store.findById(
+        editionId
+      );
+
+    if (!edition) {
+
+      throw new Error(
+        `Edition not found: ${editionId}`
+      );
+    }
+
+    return store.update(
+      editionId,
+      {
+        articleIds,
+        pageIds,
+      }
+    );
+  }
+
   async markStageComplete(
     editionId: string,
     stage: EditionStage,

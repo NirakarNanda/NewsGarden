@@ -1,5 +1,7 @@
 import type { AIClient } from "./AIClient.js";
 
+import { fetchWithTimeout } from "../../utils/fetchWithTimeout.js";
+
 interface OllamaResponse {
   response?: string;
   error?: string;
@@ -30,7 +32,7 @@ export class LocalModelClient
     try {
 
       const response =
-        await fetch(
+        await fetchWithTimeout(
           url,
           {
             method: "POST",

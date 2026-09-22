@@ -28,9 +28,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   try {
     const raw = await loadArticle(articleId);
     const article = normalizeArticle(raw);
-    return { title: `${article.title} — The Daily NEXA` };
+    return { title: `${article.title} — NewsGarden` };
   } catch {
-    return { title: "Article — The Daily NEXA" };
+    return { title: "Article — NewsGarden" };
   }
 }
 

@@ -10,7 +10,7 @@ import { editionTone, prettyStatus } from "./editions/status";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Newsroom — The Daily NEXA" };
+export const metadata = { title: "Newsroom — NewsGarden" };
 
 const CARDS = [
   {

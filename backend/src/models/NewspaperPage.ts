@@ -24,6 +24,15 @@ export interface INewspaperPage
   pageNumber: number;
 
   slots: PageSlot[];
+
+  /*
+   * Per-page human approval. The compiler
+   * agent only assembles the full
+   * newspaper once every page is approved.
+   */
+  status: "draft" | "approved";
+
+  approvedAt?: Date;
 }
 
 const pageSlotSchema =
@@ -80,6 +89,17 @@ const newspaperPageSchema =
       slots: {
         type: [pageSlotSchema],
         default: [],
+      },
+
+      status: {
+        type: String,
+        enum: ["draft", "approved"],
+        default: "draft",
+        index: true,
+      },
+
+      approvedAt: {
+        type: Date,
       },
     },
     {

@@ -122,3 +122,25 @@ export async function createPage(
 
   return NewspaperPage.create(input);
 }
+
+/*
+ * Delete an edition and its pages.
+ * Approvals are removed too; articles are
+ * kept (they are not edition-scoped).
+ * Returns true when an edition was removed.
+ */
+export async function deleteEdition(
+  editionId: string
+): Promise<boolean> {
+
+  const removed =
+    await Edition.deleteOne({
+      editionId,
+    });
+
+  await NewspaperPage.deleteMany({
+    editionId,
+  });
+
+  return removed.deletedCount > 0;
+}

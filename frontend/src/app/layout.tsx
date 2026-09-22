@@ -6,7 +6,7 @@ import "@fontsource/pixelify-sans/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "The Daily NEXA",
+  title: "NewsGarden",
   description: "A cozy AI newsroom",
 };
 

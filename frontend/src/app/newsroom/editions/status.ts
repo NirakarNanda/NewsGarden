@@ -7,6 +7,8 @@ export function editionTone(status: string): BadgeTone {
       return "green";
     case "approved":
       return "blue";
+    case "compiled":
+      return "green";
     case "in-review":
       return "amber";
     case "revision-requested":

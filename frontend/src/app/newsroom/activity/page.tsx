@@ -5,7 +5,7 @@ import NewsroomNav from "@/components/layout/NewsroomNav";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Activity — The Daily NEXA" };
+export const metadata = { title: "Activity — NewsGarden" };
 
 export default async function ActivityPage() {
   let items: Awaited<ReturnType<typeof fetchActivity>> | null = null;

@@ -108,6 +108,7 @@ function deriveCurrentStage(status: Edition["status"], stagesCompleted: string[]
   if (
     status === "in-review" ||
     status === "approved" ||
+    status === "compiled" ||
     status === "published" ||
     status === "revision-requested"
   ) {
@@ -125,6 +126,10 @@ function toNewspaperPageRecord(page: {
   pageNumber: number;
 
   slots: PageSlot[];
+
+  status?: "draft" | "approved";
+
+  approvedAt?: Date;
 }): NewspaperPage {
   return {
     pageId: page.pageId,
@@ -134,6 +139,10 @@ function toNewspaperPageRecord(page: {
     pageNumber: page.pageNumber,
 
     slots: page.slots,
+
+    status: page.status ?? "draft",
+
+    approvedAt: page.approvedAt?.toISOString(),
   };
 }
 
@@ -175,4 +184,29 @@ function toArticleView(article: {
 
     status: article.status,
   };
+}
+
+/*
+ * Delete an edition and its pages. Approvals tied to the edition
+ * are removed as well. Throws 404 when the edition does not exist.
+ */
+export async function deleteEditionService(
+  editionId: string
+): Promise<void> {
+
+  const { deleteEdition } = await import(
+    "../repositories/edition.repository.js"
+  );
+
+  const { Approval } = await import(
+    "../models/Approval.js"
+  );
+
+  const removed = await deleteEdition(editionId);
+
+  if (!removed) {
+    throw AppError.notFound(`Edition not found: ${editionId}`);
+  }
+
+  await Approval.deleteMany({ editionId });
 }

@@ -17,6 +17,7 @@ export interface IEdition
     | "in-progress"
     | "in-review"
     | "approved"
+    | "compiled"
     | "published"
     | "revision-requested";
 
@@ -61,6 +62,7 @@ const editionSchema =
           "in-progress",
           "in-review",
           "approved",
+          "compiled",
           "published",
           "revision-requested",
         ],

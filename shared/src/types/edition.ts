@@ -4,6 +4,7 @@ export type EditionStatus =
   | "in-progress"
   | "in-review"
   | "approved"
+  | "compiled"
   | "published"
   | "revision-requested";
 
@@ -88,6 +89,11 @@ export interface NewspaperPage {
   pageNumber: number;
 
   slots: PageSlot[];
+
+  /** Per-page human approval; the compiler only assembles approved pages. */
+  status?: "draft" | "approved";
+
+  approvedAt?: Date | string;
 }
 
 // The human approval decision. Approval is required before publishing.

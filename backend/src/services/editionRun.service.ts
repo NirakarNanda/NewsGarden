@@ -95,11 +95,13 @@ export async function startEditionRun(
     };
   }
 
-  // Quick mode: 4 stories on a single page.
+  // Quick mode: 4 stories on a single page. Full mode: a 4-6 page
+  // newspaper (20 stories, 4 per page = 5 pages) whose pages are
+  // approved one by one, then assembled by the compiler agent.
   const isQuick = options.mode === "quick";
   const workflowOptions: DailyEditionOptions = {
-    maxArticles: isQuick ? 4 : options.maxArticles,
-    articlesPerPage: isQuick ? 4 : options.articlesPerPage,
+    maxArticles: isQuick ? 4 : (options.maxArticles ?? 20),
+    articlesPerPage: isQuick ? 4 : (options.articlesPerPage ?? 4),
   };
 
   // Create the edition first so the 202 response carries the editionId

@@ -64,7 +64,7 @@ export default function Sidebar() {
         The Daily
       </div>
       <div className="absolute text-[24px] font-normal leading-none tracking-[0.1em] text-[#f2f4ff]" style={{ left: 90, top: 50 }}>
-        NEXA
+        NewsGarden
       </div>
 
       <div className="absolute text-[10px] font-medium uppercase tracking-[0.22em] text-[#8f97b8]" style={{ left: 30, top: 108 }}>

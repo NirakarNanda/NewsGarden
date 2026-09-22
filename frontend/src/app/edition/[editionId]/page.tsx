@@ -11,6 +11,7 @@ import Badge from "@/components/ui/Badge";
 import { ErrorState } from "@/components/ui/DataState";
 import NewsroomNav from "@/components/layout/NewsroomNav";
 import EditionView from "@/components/newspaper/EditionView";
+import NewspaperAssembler, { type AssemblerPage } from "@/components/newspaper/NewspaperAssembler";
 import EditionApprovalActions from "@/components/approval/EditionApprovalActions";
 
 // Rendered per request: the edition is live newsroom data.
@@ -44,9 +45,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { editionId } = await params;
   try {
     const edition = await loadEdition(editionId);
-    return { title: `${edition.title} — The Daily NEXA` };
+    return { title: `${edition.title} — NewsGarden` };
   } catch {
-    return { title: "Edition — The Daily NEXA" };
+    return { title: "Edition — NewsGarden" };
   }
 }
 
@@ -70,15 +71,14 @@ export default async function EditionPage({ params }: Params) {
     );
   }
 
-  if (edition.status !== "published") {
+  if (edition.status !== "published" && edition.status !== "compiled") {
     const byId = new Map(edition.articles.map((a) => [str(a.articleId), toArticle(a)]));
-    const pages: Article[][] = [...(edition.pages ?? [])]
-      .sort((a, b) => a.pageNumber - b.pageNumber)
-      .map((page) =>
-        (page.slots ?? [])
-          .map((slot) => (slot.articleId ? byId.get(slot.articleId) : undefined))
-          .filter((a): a is Article => a !== undefined),
-      );
+    const rawPages = [...(edition.pages ?? [])].sort((a, b) => a.pageNumber - b.pageNumber);
+    const pages: Article[][] = rawPages.map((page) =>
+      (page.slots ?? [])
+        .map((slot) => (slot.articleId ? byId.get(slot.articleId) : undefined))
+        .filter((a): a is Article => a !== undefined),
+    );
     const isInReview = edition.status === "in-review";
 
     return (
@@ -91,7 +91,7 @@ export default async function EditionPage({ params }: Params) {
               <div className="mr-auto">
                 <p className="text-sm font-medium text-amber-200">Draft, not published</p>
                 <p className="text-xs text-[#8f97b8]">
-                  Review the pages below, then approve or request changes.
+                  Approve each page below, then create the full newspaper.
                 </p>
               </div>
               <EditionApprovalActions editionId={edition.editionId} compact />
@@ -114,7 +114,20 @@ export default async function EditionPage({ params }: Params) {
             {edition.aiFallback && <Badge tone="amber">Built without AI</Badge>}
           </div>
           <h1 className="mb-6 text-2xl font-semibold text-[#f2f4ff]">{edition.title}</h1>
-          {pages.length > 0 ? (
+          {isInReview && rawPages.length > 0 ? (
+            /* Per-page approval: approve each page, then create the full newspaper. */
+            <NewspaperAssembler
+              editionId={edition.editionId}
+              title={edition.title}
+              date={formatDate(edition.date) || str(edition.date)}
+              pages={rawPages.map((page, i) => ({
+                pageId: str(page.pageId),
+                pageNumber: page.pageNumber,
+                status: page.status === "approved" ? "approved" : "draft",
+                articles: pages[i] ?? [],
+              }) satisfies AssemblerPage)}
+            />
+          ) : pages.length > 0 ? (
             <EditionView
               title={edition.title}
               date={formatDate(edition.date) || str(edition.date)}

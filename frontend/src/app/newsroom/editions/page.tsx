@@ -6,11 +6,12 @@ import Badge from "@/components/ui/Badge";
 import { EmptyState, ErrorState } from "@/components/ui/DataState";
 import NewsroomNav from "@/components/layout/NewsroomNav";
 import EditionApprovalActions from "@/components/approval/EditionApprovalActions";
+import DeleteEditionButton from "@/components/editions/DeleteEditionButton";
 import { editionTone, prettyStatus } from "./status";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Editions — The Daily NEXA" };
+export const metadata = { title: "Editions — NewsGarden" };
 
 interface EditionRow {
   editionId: string;
@@ -98,6 +99,7 @@ export default async function EditionsPage() {
                     <Badge tone={editionTone(e.status)}>{prettyStatus(e.status)}</Badge>
                     {e.status === "in-review" && <Badge tone="amber">Needs your review</Badge>}
                     {e.aiFallback && <Badge tone="amber">Built without AI</Badge>}
+                    <DeleteEditionButton editionId={e.editionId} title={e.title} />
                   </div>
                   <ArrowRight
                     size={16}

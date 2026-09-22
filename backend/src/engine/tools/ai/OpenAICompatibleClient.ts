@@ -1,5 +1,7 @@
 import type { AIClient } from "./AIClient.js";
 
+import { fetchWithTimeout } from "../../utils/fetchWithTimeout.js";
+
 interface ChatCompletionsResponse {
   choices?: Array<{
     message?: {
@@ -68,7 +70,9 @@ export class OpenAICompatibleClient implements AIClient {
     let response: Response;
 
     try {
-      response = await fetch(url, {
+      // Hard timeout: a hung provider call must never stall an
+      // edition forever. Timeout -> retry -> caller fallback.
+      response = await fetchWithTimeout(url, {
         method: "POST",
 
         headers: {

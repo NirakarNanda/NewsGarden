@@ -7,6 +7,10 @@ import {
 } from "../brain/EditionManager.js";
 
 import {
+  NewspaperPage,
+} from "../../models/NewspaperPage.js";
+
+import {
   StoryWorkflow,
 } from "./StoryWorkflow.js";
 
@@ -355,10 +359,10 @@ export class DailyEditionWorkflow {
       "design"
     );
 
-    // 5. Quality gate. A failed review
-    // stops the edition here — it never
-    // reaches approval, let alone
-    // publication.
+    // 5. Quality gate. Articles that fail review are EXCLUDED from
+    // the edition instead of killing the whole run — one strict AI
+    // judgment (or one short body) must not waste 7 good stories.
+    // The edition fails only when zero articles pass.
     const qualityTask =
       await this.brain.createTask(
         "quality-agent",
@@ -389,6 +393,7 @@ export class DailyEditionWorkflow {
     const qualityOutput =
       qualityResult.output as {
         editionPassed: boolean;
+        passed?: string[];
         failed?: {
           articleId: string;
           reasons: string[];
@@ -403,15 +408,25 @@ export class DailyEditionWorkflow {
       aiFallback = true;
     }
 
+    const passedArticleIds =
+      qualityOutput.passed ??
+      storiesCompleted.filter(
+        (id) =>
+          !(qualityOutput.failed ?? []).some(
+            (f) => f.articleId === id
+          )
+      );
+
+    const failedArticleIds = (
+      qualityOutput.failed ?? []
+    ).map((f) => f.articleId);
+
     if (
-      !qualityOutput.editionPassed
+      passedArticleIds.length === 0
     ) {
 
-      const failed =
-        qualityOutput.failed ?? [];
-
       const reason =
-        `Quality review failed for ${failed.length} article(s): ${failed
+        `Quality review failed for ${failedArticleIds.length} article(s): ${(qualityOutput.failed ?? [])
           .map(
             (f) =>
               `${f.articleId} (${f.reasons.join("; ")})`
@@ -423,6 +438,62 @@ export class DailyEditionWorkflow {
       await this.editionManager.markEditionFailed(editionId, reason);
 
       throw new Error(reason);
+    }
+
+    let finalArticleIds = storiesCompleted;
+    let finalPageCount = pageResult.pageCount;
+
+    if (
+      failedArticleIds.length > 0
+    ) {
+
+      console.log(
+        `[DailyEditionWorkflow] Excluding ${failedArticleIds.length} failed article(s) from edition ${editionId}: ${failedArticleIds.join(", ")}`
+      );
+
+      // Rebuild the pages from the passing articles only. Pages were
+      // laid out before review, so drop them and lay out again.
+      await NewspaperPage.deleteMany({
+        editionId,
+      });
+
+      const passedPages = this.chunk(
+        passedArticleIds,
+        articlesPerPage
+      ).map(
+        (
+          articleIds,
+          i
+        ) => ({
+
+          pageNumber: i + 1,
+
+          articleIds,
+        })
+      );
+
+      const relayout =
+        await this.pageWorkflow.run(
+          this.brain,
+          editionId,
+          passedPages
+        );
+
+      if (
+        relayout.aiFallback
+      ) {
+
+        aiFallback = true;
+      }
+
+      finalArticleIds = passedArticleIds;
+      finalPageCount = relayout.pageCount;
+
+      await this.editionManager.replaceEditionPages(
+        editionId,
+        passedArticleIds,
+        relayout.pageIds
+      );
     }
 
     await this.editionManager.markStageComplete(
@@ -462,12 +533,13 @@ export class DailyEditionWorkflow {
       discovered:
         discovered.length,
 
-      storiesCompleted,
+      storiesCompleted:
+        finalArticleIds,
 
       storiesFailed,
 
       pageCount:
-        pageResult.pageCount,
+        finalPageCount,
 
       qualityPassed: true,
 

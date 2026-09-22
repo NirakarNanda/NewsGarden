@@ -6,7 +6,7 @@ import NewsroomNav from "@/components/layout/NewsroomNav";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Agents — The Daily NEXA" };
+export const metadata = { title: "Agents — NewsGarden" };
 
 function statusTone(status: AgentStatus): BadgeTone {
   switch (status) {

@@ -92,6 +92,10 @@ import {
   EditionLayoutAgent,
 } from "../agents/design/EditionLayoutAgent.js";
 
+import {
+  NewspaperCompilerAgent,
+} from "../agents/design/NewspaperCompilerAgent.js";
+
 export type TaskExecutor = (
   task: AgentTask
 ) => Promise<AgentResult>;
@@ -147,6 +151,9 @@ export const AGENT_REGISTRY: Record<
 
   "edition-layout-agent":
     new EditionLayoutAgent(),
+
+  "newspaper-compiler-agent":
+    new NewspaperCompilerAgent(),
 };
 
 /*
