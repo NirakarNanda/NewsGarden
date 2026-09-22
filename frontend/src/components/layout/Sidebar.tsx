@@ -5,6 +5,7 @@ import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
 import Link from "next/link";
 import { BarChart3, BookOpen, FileText, Home, Settings, Users } from "lucide-react";
+import { useInReviewEditions } from "@/features/editions/useInReviewEditions";
 
 const NAV = [
   { label: "Office", href: "/", icon: Home, active: true },
@@ -17,6 +18,8 @@ const NAV = [
 
 export default function Sidebar() {
   const root = useRef<HTMLElement>(null);
+  const { data: inReview } = useInReviewEditions();
+  const inReviewCount = inReview.length;
 
   useEffect(() => {
     if (!motionOK()) return;
@@ -58,13 +61,22 @@ export default function Sidebar() {
             key={label}
             href={href}
             onMouseEnter={wiggle}
-            className={`nav-item flex items-center rounded-xl text-[14.5px] ${
+            className={`nav-item relative flex items-center rounded-xl text-[14.5px] ${
               active ? "bg-[#20294a] text-[#f2f4ff]" : "text-[#b8c0dc] hover:bg-white/5"
             }`}
             style={{ height: 40, paddingLeft: 10, gap: 12 }}
           >
             <Icon size={20} fill={active || label === "Agents" || label === "Settings" ? "currentColor" : "none"} strokeWidth={active ? 1.5 : 1.8} />
             {label}
+            {label === "Editions" && inReviewCount > 0 && (
+              <span
+                data-testid="sidebar-editions-badge"
+                title={`${inReviewCount} edition${inReviewCount === 1 ? "" : "s"} waiting for approval`}
+                className="absolute right-2 grid min-w-[20px] place-items-center rounded-full bg-amber-400/90 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-[#1a1206]"
+              >
+                {inReviewCount}
+              </span>
+            )}
           </Link>
         ))}
       </nav>

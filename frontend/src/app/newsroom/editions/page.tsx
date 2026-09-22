@@ -42,6 +42,12 @@ export default async function EditionsPage() {
     const raw = await apiGet<{ success: boolean; data: unknown }>("/api/editions?limit=50");
     const list = Array.isArray(raw.data) ? (raw.data as Record<string, unknown>[]) : [];
     editions = list.map(normalizeEdition).filter((e) => e.editionId);
+    // In-review editions first — they need a human decision.
+    editions.sort((a, b) => {
+      const aReview = a.status === "in-review" ? 0 : 1;
+      const bReview = b.status === "in-review" ? 0 : 1;
+      return aReview - bReview;
+    });
   } catch {
     editions = null;
   }
@@ -90,6 +96,7 @@ export default async function EditionsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={editionTone(e.status)}>{prettyStatus(e.status)}</Badge>
+                    {e.status === "in-review" && <Badge tone="amber">Needs your review</Badge>}
                     {e.aiFallback && <Badge tone="amber">Built without AI</Badge>}
                   </div>
                   <ArrowRight

@@ -71,28 +71,66 @@ export default async function EditionPage({ params }: Params) {
   }
 
   if (edition.status !== "published") {
+    const byId = new Map(edition.articles.map((a) => [str(a.articleId), toArticle(a)]));
+    const pages: Article[][] = [...(edition.pages ?? [])]
+      .sort((a, b) => a.pageNumber - b.pageNumber)
+      .map((page) =>
+        (page.slots ?? [])
+          .map((slot) => (slot.articleId ? byId.get(slot.articleId) : undefined))
+          .filter((a): a is Article => a !== undefined),
+      );
+    const isInReview = edition.status === "in-review";
+
     return (
       <div className="min-h-screen bg-[#0b0f1a]">
         <NewsroomNav active="/newsroom/editions" />
-        <div className="mx-auto max-w-xl px-6 py-24 text-center">
-          <Badge tone="amber">{edition.status.replace("-", " ")}</Badge>
-          {edition.aiFallback && <Badge tone="amber">Built without AI</Badge>}
-          <h1 className="mt-4 text-2xl font-semibold text-[#f2f4ff]">{edition.title}</h1>
-          <p className="mt-2 text-sm text-[#b8c0dc]">
-            This edition isn&apos;t published yet — check back once the newsroom approves it.
-          </p>
-          {edition.status === "in-review" && (
-            <div className="mt-6 text-left">
+        {/* Sticky action bar for the human approval gate. */}
+        {isInReview && (
+          <div className="sticky top-0 z-30 border-b border-amber-300/20 bg-[#141b29]/95 backdrop-blur">
+            <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 md:px-6">
+              <div className="mr-auto">
+                <p className="text-sm font-medium text-amber-200">Draft, not published</p>
+                <p className="text-xs text-[#8f97b8]">
+                  Review the pages below, then approve or request changes.
+                </p>
+              </div>
+              <EditionApprovalActions editionId={edition.editionId} compact />
+            </div>
+          </div>
+        )}
+        <main className="mx-auto max-w-6xl px-4 py-8 md:px-6">
+          <Link
+            href="/newsroom/editions"
+            className="mb-5 inline-flex items-center gap-1.5 text-sm text-[#b8c0dc] transition-colors hover:text-[#f2f4ff]"
+          >
+            <ArrowLeft size={15} />
+            All editions
+          </Link>
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <Badge tone="amber">Draft, not published</Badge>
+            <Badge tone={edition.status === "in-review" ? "amber" : "default"}>
+              {edition.status.replace("-", " ")}
+            </Badge>
+            {edition.aiFallback && <Badge tone="amber">Built without AI</Badge>}
+          </div>
+          <h1 className="mb-6 text-2xl font-semibold text-[#f2f4ff]">{edition.title}</h1>
+          {pages.length > 0 ? (
+            <EditionView
+              title={edition.title}
+              date={formatDate(edition.date) || str(edition.date)}
+              pages={pages}
+            />
+          ) : (
+            <p className="text-sm text-[#8f97b8]">
+              This edition has no pages yet — it may still be building.
+            </p>
+          )}
+          {isInReview && (
+            <div className="mt-8">
               <EditionApprovalActions editionId={edition.editionId} />
             </div>
           )}
-          <Link
-            href="/newsroom/editions"
-            className="mt-6 inline-block rounded-md border border-white/15 px-4 py-2 text-sm text-[#f2f4ff] transition-colors hover:bg-white/5"
-          >
-            All editions
-          </Link>
-        </div>
+        </main>
       </div>
     );
   }

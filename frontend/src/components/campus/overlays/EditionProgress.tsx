@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Play } from "lucide-react";
 import { useEdition } from "@/features/editions/useEdition";
 import { useEditionRun } from "@/features/editions/useEditionRun";
+import { useInReviewEditions } from "@/features/editions/useInReviewEditions";
 import { saveApprovalKey } from "@/lib/approvalKey";
 import { EDITION_STAGES } from "@/lib/constants";
 import { gsap } from "@/lib/gsap";
@@ -19,6 +20,7 @@ export const ghostButton =
 
 export default function EditionProgress() {
   const { data: ed, source } = useEdition();
+  const { data: inReview } = useInReviewEditions();
   const demo = source === "mock";
   const pct = ed && ed.pagesTotal ? Math.min(100, (ed.pagesCompleted / ed.pagesTotal) * 100) : 0;
   const root = useRef<HTMLElement>(null);
@@ -67,6 +69,29 @@ export default function EditionProgress() {
   return (
     <section ref={root} data-testid="panel-edition-progress" data-intro="panel" className={panelClass} style={{ left: 1255, top: 12, width: 276, height: 392, background: panelBg }}>
       <CampusHUD />
+
+      {/* In-review banner: surfaces editions waiting for human approval. */}
+      {inReview.length > 0 && (
+        <Link
+          href={`/edition/${inReview[0].editionId}`}
+          data-testid="banner-ready-for-approval"
+          className="absolute flex items-center justify-between gap-2 rounded-[12px] border border-amber-300/30 bg-amber-400/10 px-3 py-2 transition-colors hover:bg-amber-400/20"
+          style={{ left: 15, right: 15, top: 52 }}
+        >
+          <span>
+            <span className="block text-[12px] font-medium text-amber-200">
+              Edition ready for approval
+            </span>
+            <span className="block truncate text-[11px] text-[#b8c0dc]">
+              {inReview[0].title}
+              {inReview.length > 1 && ` +${inReview.length - 1} more`}
+            </span>
+          </span>
+          <span className="flex shrink-0 items-center gap-1 text-[12px] font-medium text-amber-200">
+            Review & approve <ArrowRight size={14} />
+          </span>
+        </Link>
+      )}
 
       <div className="absolute" style={{ left: 24, top: 90 }}>
         <h2 className="m-0 text-[15px] font-normal leading-5 text-[#dfe4ff]">Today&apos;s Edition</h2>
