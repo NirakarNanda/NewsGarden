@@ -22,6 +22,11 @@ export interface DailyEditionOptions {
   maxArticles?: number;
 
   articlesPerPage?: number;
+
+  // Pre-created edition id (the run service creates the edition first so
+  // the 202 response can carry the id immediately). When supplied, the
+  // workflow reuses it instead of creating a new edition.
+  editionId?: string;
 }
 
 export interface DailyEditionSummary {
@@ -148,15 +153,22 @@ export class DailyEditionWorkflow {
 
     let aiFallback = false;
 
-    // 1. Create the edition.
-    const edition =
-      await this.editionManager.createEdition(
-        title,
-        today
+    // 1. Create the edition (or reuse the pre-created one from the run
+    // service, which creates it first so the 202 can carry the id).
+    let editionId: string;
+    if (options.editionId) {
+      editionId = options.editionId;
+      console.log(
+        `[DailyEditionWorkflow] Reusing pre-created edition ${editionId}`
       );
-
-    const editionId =
-      edition.editionId;
+    } else {
+      const edition =
+        await this.editionManager.createEdition(
+          title,
+          today
+        );
+      editionId = edition.editionId;
+    }
 
     console.log(
       `[DailyEditionWorkflow] Building edition ${editionId}`
@@ -260,7 +272,8 @@ export class DailyEditionWorkflow {
         const story =
           await this.storyWorkflow.run(
             this.brain,
-            articleId
+            articleId,
+            editionId
           );
 
         storiesCompleted.push(
@@ -397,14 +410,19 @@ export class DailyEditionWorkflow {
       const failed =
         qualityOutput.failed ?? [];
 
-      throw new Error(
+      const reason =
         `Quality review failed for ${failed.length} article(s): ${failed
           .map(
             (f) =>
               `${f.articleId} (${f.reasons.join("; ")})`
           )
-          .join(" | ")}`
-      );
+          .join(" | ")}`;
+
+      // Don't leave the edition permanently in-progress: mark it failed,
+      // persist the failure event, and surface the reason for Retry.
+      await this.editionManager.markEditionFailed(editionId, reason);
+
+      throw new Error(reason);
     }
 
     await this.editionManager.markStageComplete(

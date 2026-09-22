@@ -46,6 +46,8 @@ export interface NewsEvent {
   at?: string;
   /** Where this event came from: the SSE stream or the 30s fallback poll. */
   via?: "sse" | "fallback";
+  /** Raw backend payload (editionId, articleId, stage, etc.). */
+  payload?: Record<string, unknown>;
 }
 
 type Listener = (event: NewsEvent) => void;
@@ -80,6 +82,7 @@ export function toNewsEvent(id: string, frame: Record<string, unknown>): NewsEve
     ...(location ? { location } : {}),
     ...(message ? { message } : {}),
     ...(at ? { at } : {}),
+    payload,
   };
 }
 
@@ -103,6 +106,7 @@ export function rowToNewsEvent(r: Record<string, unknown>): NewsEvent | null {
     ...(location ? { location } : {}),
     ...(message ? { message } : {}),
     ...(at ? { at } : {}),
+    payload,
   };
 }
 

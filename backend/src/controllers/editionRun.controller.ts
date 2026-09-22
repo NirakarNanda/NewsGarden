@@ -26,13 +26,27 @@ export function getRunState(
  * POST /api/editions/run — start an edition build now.
  * 202 when the run starts, 409 when one is already active.
  * Authenticated (mutating route).
+ *
+ * Optional body (zod-validated): maxArticles (1-8), articlesPerPage (1-8),
+ * mode ("quick" = 4 stories on a single page). The edition is created
+ * first so the 202 response carries the editionId immediately.
  */
-export function runEdition(
-  _req: Request,
+export async function runEdition(
+  req: Request,
   res: Response
-): void {
+): Promise<void> {
 
-  const { accepted, state } = startEditionRun();
+  const body = (req.body ?? {}) as {
+    maxArticles?: number;
+    articlesPerPage?: number;
+    mode?: "quick";
+  };
+
+  const { accepted, state } = await startEditionRun({
+    maxArticles: body.maxArticles,
+    articlesPerPage: body.articlesPerPage,
+    mode: body.mode,
+  });
 
   if (!accepted) {
 
@@ -46,7 +60,7 @@ export function runEdition(
     return;
   }
 
-  logger.info("On-demand edition run started.");
+  logger.info("On-demand edition run started.", { editionId: state.editionId });
 
   res.status(202).json({
     success: true,

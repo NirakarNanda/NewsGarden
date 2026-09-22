@@ -220,6 +220,44 @@ export class EditionManager {
   }
 
   /*
+   * Mark an edition as failed (e.g. quality gate rejected it).
+   * Sets status to "failed" with the reason so the edition doesn't sit
+   * permanently in-progress and the UI can surface a Retry.
+   */
+  async markEditionFailed(
+    editionId: string,
+    reason: string
+  ): Promise<void> {
+
+    try {
+
+      const store =
+        await getEditionStore();
+
+      await store.update(
+        editionId,
+        {
+          status: "failed",
+          failureReason: reason,
+        } as Record<string, unknown>
+      );
+
+      eventBus.emit("EDITION_RUN_FAILED", {
+        editionId,
+        error: reason,
+        at: new Date().toISOString(),
+      });
+
+    } catch (error) {
+
+      console.error(
+        `[EditionManager] Failed to mark edition ${editionId} as failed:`,
+        error instanceof Error ? error.message : error
+      );
+    }
+  }
+
+  /*
    * Move the edition to human review.
    * Single source of truth: the approval service creates the pending
    * Approval record and sets the edition in-review (idempotent).

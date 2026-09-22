@@ -70,25 +70,37 @@ export function useEditionRun() {
     }
   }, []);
 
-  const startRun = useCallback(async (): Promise<StartRunResult> => {
-    setStarting(true);
-    try {
-      await apiPost("/api/editions/run", undefined, {
-        headers: authHeaders(loadApprovalKey()),
-      });
-      await refresh();
-      return "started";
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 409) {
+  const startRun = useCallback(
+    async (options?: {
+      maxArticles?: number;
+      articlesPerPage?: number;
+      mode?: "quick";
+    }): Promise<StartRunResult & { editionId?: string }> => {
+      setStarting(true);
+      try {
+        const raw = await apiPost<{ success: boolean; data: EditionRunState }>(
+          "/api/editions/run",
+          options ?? undefined,
+          {
+            headers: authHeaders(loadApprovalKey()),
+          }
+        );
         await refresh();
-        return "running";
+        const editionId = raw?.data?.editionId;
+        return Object.assign("started" as StartRunResult, { editionId });
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 409) {
+          await refresh();
+          return "running";
+        }
+        if (e instanceof ApiError && e.status === 401) return "needs-key";
+        return "error";
+      } finally {
+        setStarting(false);
       }
-      if (e instanceof ApiError && e.status === 401) return "needs-key";
-      return "error";
-    } finally {
-      setStarting(false);
-    }
-  }, [refresh]);
+    },
+    [refresh]
+  );
 
   return { runState, starting, startRun, refresh };
 }

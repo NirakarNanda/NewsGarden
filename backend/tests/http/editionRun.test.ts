@@ -27,6 +27,25 @@ vi.mock("../../src/engine/workflows/DailyEditionWorkflow.js", () => ({
   },
 }));
 
+// The run service creates the edition first (so the 202 carries the
+// editionId). Mock EditionManager to avoid needing a database here.
+vi.mock("../../src/engine/brain/EditionManager.js", () => ({
+  EditionManager: class {
+    async createEdition(title: string) {
+      return {
+        editionId: "ed-test-123",
+        title,
+        date: new Date(),
+        status: "draft",
+        articleIds: [],
+        pageIds: [],
+        stagesCompleted: [],
+        aiFallback: false,
+      };
+    }
+  },
+}));
+
 let app: import("express").Express;
 
 beforeAll(async () => {

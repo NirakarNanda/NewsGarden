@@ -61,6 +61,20 @@ export const editionListQuery = paginationQuery(100);
 
 export const activityListQuery = paginationQuery(200);
 
+/*
+ * POST /api/editions/run body. All fields optional:
+ * - maxArticles: cap the stories produced (1-8)
+ * - articlesPerPage: stories per laid-out page (1-8)
+ * - mode: "quick" builds 4 stories on a single page
+ */
+export const editionRunBody = z
+  .object({
+    maxArticles: z.number().int().min(1).max(8).optional(),
+    articlesPerPage: z.number().int().min(1).max(8).optional(),
+    mode: z.literal("quick").optional(),
+  })
+  .optional();
+
 export const approvalDecisionBody = z
   .object({
 

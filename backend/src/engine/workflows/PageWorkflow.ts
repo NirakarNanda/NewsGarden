@@ -2,6 +2,8 @@ import {
   BrainAgent,
 } from "../brain/BrainAgent.js";
 
+import { eventBus } from "../events/EventBus.js";
+
 export interface PageWorkflowResult {
 
   editionId: string;
@@ -83,6 +85,15 @@ export class PageWorkflow {
       pageIds.push(
         output.pageId
       );
+
+      // Surface each laid-out page on the live build view.
+      eventBus.emit("PAGE_SLOT_FILLED", {
+        editionId,
+        pageId: output.pageId,
+        pageNumber: page.pageNumber,
+        articleIds: page.articleIds,
+        at: new Date().toISOString(),
+      });
 
       if (
         output.aiFallback

@@ -16,6 +16,7 @@ import { mutationLimiter } from "../middleware/rateLimit.middleware.js";
 
 import {
   editionListQuery,
+  editionRunBody,
   validateRequest,
 } from "../middleware/validate.middleware.js";
 
@@ -30,6 +31,7 @@ router.post(
   "/run",
   authMiddleware,
   mutationLimiter,
+  validateRequest({ body: editionRunBody }),
   runEdition
 );
 

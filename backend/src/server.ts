@@ -218,14 +218,13 @@ async function startServer(): Promise<void> {
      */
     if (env.runOnStart) {
 
-      const { accepted } =
-        startEditionRun();
-
-      logger.info(
-        accepted
-          ? "RUN_ON_START: edition run started."
-          : "RUN_ON_START: a run was already in progress."
-      );
+      void startEditionRun().then(({ accepted }) => {
+        logger.info(
+          accepted
+            ? "RUN_ON_START: edition run started."
+            : "RUN_ON_START: a run was already in progress."
+        );
+      });
     }
 
     /*

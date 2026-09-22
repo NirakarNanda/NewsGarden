@@ -33,12 +33,22 @@ export default function EditionProgress() {
 
   const busy = starting || runState.running;
 
-  const handleRun = async () => {
+  const handleRun = async (quick = false) => {
     setRunNote("");
     setNeedsKey(false);
-    const result = await startRun();
-    if (result === "started") setRunNote("Edition run started.");
-    else if (result === "running") setRunNote("A run is already in progress.");
+    const result = await startRun(quick ? { mode: "quick" } : undefined);
+    // The 202 carries the editionId now; link straight to the live view.
+    const editionId =
+      typeof result === "object" && result !== null
+        ? (result as { editionId?: string }).editionId
+        : undefined;
+    if (result === "started" || (typeof result !== "string" && editionId)) {
+      setRunNote("Edition run started.");
+      if (editionId && typeof window !== "undefined") {
+        window.location.href = `/edition/${editionId}/live`;
+        return;
+      }
+    } else if (result === "running") setRunNote("A run is already in progress.");
     else if (result === "needs-key") setNeedsKey(true);
     else setRunNote("Couldn't start the run.");
   };
@@ -108,7 +118,7 @@ export default function EditionProgress() {
       </div>
 
       {!demo && (
-        <div className="absolute" style={{ right: 16, top: 88 }}>
+        <div className="absolute flex flex-col items-end gap-1.5" style={{ right: 16, top: 88 }}>
           <button
             type="button"
             onClick={() => void handleRun()}
@@ -119,6 +129,19 @@ export default function EditionProgress() {
             <span className="flex items-center gap-1.5">
               <Play size={12} />
               {starting ? "Starting…" : runState.running ? "Running…" : "Run edition"}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleRun(true)}
+            disabled={busy}
+            title="Build a quick one-page edition (4 stories) and watch it live"
+            data-testid="btn-quick-run"
+            className="grid h-[28px] place-items-center gap-1 rounded-[9px] border border-amber-300/40 bg-amber-400/10 px-2.5 text-[12px] text-amber-200 hover:bg-amber-400/20 disabled:cursor-default disabled:opacity-60"
+          >
+            <span className="flex items-center gap-1.5">
+              <Play size={12} />
+              Run quick edition (1 page)
             </span>
           </button>
           {runNote && !needsKey && (

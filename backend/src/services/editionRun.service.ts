@@ -1,6 +1,13 @@
 import {
   DailyEditionWorkflow,
+  type DailyEditionOptions,
 } from "../engine/workflows/DailyEditionWorkflow.js";
+
+import {
+  EditionManager,
+} from "../engine/brain/EditionManager.js";
+
+import { eventBus } from "../engine/events/EventBus.js";
 
 export type EditionRunStatus =
   | "running"
@@ -67,10 +74,18 @@ export function cancelEditionRun(): boolean {
   return true;
 }
 
-export function startEditionRun(): {
+export interface EditionRunOptions {
+  maxArticles?: number;
+  articlesPerPage?: number;
+  mode?: "quick";
+}
+
+export async function startEditionRun(
+  options: EditionRunOptions = {}
+): Promise<{
   accepted: boolean;
   state: EditionRunState;
-} {
+}> {
 
   if (state.running) {
 
@@ -80,16 +95,34 @@ export function startEditionRun(): {
     };
   }
 
+  // Quick mode: 4 stories on a single page.
+  const isQuick = options.mode === "quick";
+  const workflowOptions: DailyEditionOptions = {
+    maxArticles: isQuick ? 4 : options.maxArticles,
+    articlesPerPage: isQuick ? 4 : options.articlesPerPage,
+  };
+
+  // Create the edition first so the 202 response carries the editionId
+  // immediately; the build then continues in the background.
+  const editionManager = new EditionManager();
+  const today = new Date();
+  const title = isQuick
+    ? `NewsGarden Quick — ${today.toISOString().slice(0, 10)}`
+    : `NewsGarden — ${today.toISOString().slice(0, 10)}`;
+  const edition = await editionManager.createEdition(title, today);
+  const editionId = edition.editionId;
+
   state = {
     running: true,
     status: "running",
     startedAt: new Date().toISOString(),
+    editionId,
   };
 
   const workflow = new DailyEditionWorkflow();
 
   void workflow
-    .run()
+    .run({ ...workflowOptions, editionId, title })
     .then((summary) => {
 
       state = {
@@ -118,8 +151,16 @@ export function startEditionRun(): {
         status: "failed",
         startedAt: state.startedAt,
         finishedAt: new Date().toISOString(),
+        editionId,
         error: message,
       };
+
+      // Persist the failure so the live view can surface it with a Retry.
+      eventBus.emit("EDITION_RUN_FAILED", {
+        editionId,
+        error: message,
+        at: new Date().toISOString(),
+      });
 
       console.error(
         "[editionRun] Run failed:",

@@ -28,6 +28,11 @@ import {
   aiProviderName,
 } from "../utils/ai.js";
 
+import { eventBus } from "../events/EventBus.js";
+
+/** Story pipeline stages surfaced on the live build view. */
+export type StoryStage = "research" | "write" | "headline" | "illustrate";
+
 export interface StoryResult {
 
   articleId: string;
@@ -71,13 +76,29 @@ export class StoryWorkflow {
 
   async run(
     brain: BrainAgent,
-    articleId: string
+    articleId: string,
+    editionId?: string
   ): Promise<StoryResult> {
 
     const taskIds: string[] =
       [];
 
     let aiFallback = false;
+
+    const emitStory = (
+      name: string,
+      payload: Record<string, unknown>
+    ) => {
+      eventBus.emit(name, {
+        editionId: editionId ?? null,
+        articleId,
+        at: new Date().toISOString(),
+        ...payload,
+      });
+    };
+
+    emitStory("STORY_STARTED", {});
+    emitStory("STORY_STAGE", { stage: "research" as StoryStage });
 
     // 1. Research: fetch the source page
     // and synthesize notes with AI.
@@ -156,6 +177,17 @@ export class StoryWorkflow {
 
     for (const step of steps) {
 
+      // Surface the user-facing pipeline stages on the live build view.
+      const stageForStep: Record<string, StoryStage> = {
+        "write-article": "write",
+        "write-headline": "headline",
+        "generate-illustration": "illustrate",
+      };
+      const stage = stageForStep[step.type];
+      if (stage) {
+        emitStory("STORY_STAGE", { stage });
+      }
+
       const input: Record<
         string,
         unknown
@@ -204,6 +236,8 @@ export class StoryWorkflow {
         aiFallback = true;
       }
     }
+
+    emitStory("STORY_COMPLETED", { aiFallback });
 
     return {
 
