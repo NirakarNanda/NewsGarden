@@ -9,7 +9,10 @@ html,
 body {
   margin: 0;
   height: 100%;
-  overflow: hidden;
+  /* The campus stage is a fixed, self-contained layer and manages its own
+   * overflow; every other page (newsroom, article, edition…) must scroll. */
+  overflow-x: hidden;
+  overflow-y: auto;
   background: #0b0f1a;
   color: #e6e9ff;
   font-family: var(--font-ui);
@@ -24,12 +27,12 @@ body {
 }
 
 /* Compact mobile mode (< 768px): campus panels leave the scaled stage
- * and stack as a scrollable column. The panels are absolutely
- * positioned with fixed inline heights at desktop, so the overrides
- * need !important to beat inline styles; inner content keeps its
- * absolute layout because the section height is preserved. */
+ * and stack as a scrollable column. ActivityTimeline keeps absolute inner
+ * content with a fixed section height, so its override needs !important to
+ * beat inline styles; EditionProgress and Dispatch flow naturally. */
 @media (max-width: 767px) {
-  .campus-panel-stack > section {
+  .campus-panel-stack > section,
+  .campus-panel-stack > [data-testid="panel-dispatch"] {
     position: relative !important;
     left: auto !important;
     right: auto !important;
@@ -39,9 +42,10 @@ body {
     max-width: 430px !important;
     margin: 0 auto 14px !important;
   }
-  /* The dispatch overlay is a div (not a section): in the stacked layout it
-   * must flow in place instead of floating at desktop stage coordinates. */
-  .campus-panel-stack > [data-testid="panel-dispatch-overlay"] {
+  /* The dispatch overlay is nested inside the dispatch wrapper: in the
+   * stacked layout it must flow in place instead of floating at desktop
+   * stage coordinates. */
+  .campus-panel-stack [data-testid="panel-dispatch-overlay"] {
     position: relative !important;
     left: auto !important;
     right: auto !important;
@@ -51,7 +55,7 @@ body {
     max-width: 430px !important;
     height: auto !important;
     min-height: 0 !important;
-    margin: 0 auto 14px !important;
+    margin: 8px auto 14px !important;
     z-index: auto !important;
   }
 }

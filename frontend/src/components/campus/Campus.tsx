@@ -105,8 +105,8 @@ function lawnDecor(extra: number): SpriteDef[] {
     .filter((s): s is SpriteDef => !!s);
   const rand = lcg(7);
   const gutters = [
-    { from: 150, to: 131 + extra / 2 - 12 }, // left of the building
-    { from: 1246 + extra / 2 + 12, to: 1240 + extra - 12 }, // right of the building
+    { from: 288, to: 208 + extra / 2 - 12 }, // left of the building, clear of the 276px sidebar
+    { from: 1323 + extra / 2 + 12, to: 1240 + extra - 12 }, // right of the building
   ];
   const out: SpriteDef[] = [];
   for (const g of gutters) {
@@ -179,7 +179,7 @@ export default function Campus() {
         .timeline({ defaults: { ease: "power3.out" } })
         .from("[data-intro=lawn]", { opacity: 0, duration: 0.8 })
         .from("[data-intro=map]", { opacity: 0, scale: 1.04, duration: 1.1 }, "-=0.5")
-        .from("[data-intro=sidebar]", { x: -140, opacity: 0, duration: 0.7 }, "-=0.7")
+        .from("[data-intro=sidebar]", { x: -290, opacity: 0, duration: 0.7 }, "-=0.7")
         .from("[data-intro=panel]", { x: 70, opacity: 0, duration: 0.7, stagger: 0.14 }, "-=0.5")
         .from("[data-intro=footer]", { y: 70, opacity: 0, duration: 0.7 }, "-=0.5");
     }, stage);
@@ -228,8 +228,11 @@ export default function Campus() {
         <AgentSprite key={`${d.id}-${i}`} def={d} />
       ))}
 
-      {/* The campus building, centred and cropped to remove baked-in UI */}
-      <div style={{ ...frame, transform: `translateX(${Math.round(extraX / 2)}px)`, clipPath: BUILDING_CLIP }}>
+      {/* The campus building, centred between the two equal side rails and
+          cropped to remove baked-in UI. The art's building spans x 131–1246
+          (centre 688.5); the free space between the 276px sidebars is centred
+          at 765.5, so +77px keeps the office exactly centred. */}
+      <div data-testid="campus-building" style={{ ...frame, transform: `translateX(${Math.round(extraX / 2 + 77)}px)`, clipPath: BUILDING_CLIP }}>
         <CampusMap />
       </div>
     </>
@@ -360,9 +363,11 @@ export default function Campus() {
         {/* Left edge */}
         <Sidebar />
 
-        {/* Right edge */}
-        <div style={{ ...frame, transform: `translateX(${extraX}px)`, pointerEvents: "none" }}>
-          <div style={{ pointerEvents: "auto" }}>
+        {/* Right edge: the panels flow in a flex column so each card's height
+            can breathe (e.g. the approval banner) without ever overlapping
+            a sibling or the footer. */}
+        <div className="absolute" style={{ right: 5, top: 12, width: 276, pointerEvents: "none" }}>
+          <div className="flex flex-col" style={{ gap: 12, pointerEvents: "auto" }}>
             <EditionProgress />
             <ActivityTimeline />
             <DispatchPanel />
@@ -370,8 +375,7 @@ export default function Campus() {
                 never in a fixed corner where they could collide with the footer. */}
             <div
               data-testid="view-controls"
-              className="absolute flex items-center gap-2"
-              style={{ left: 1255, top: 812, width: 276 }}
+              className="flex items-center gap-2"
             >
               {viewToggle}
               {fullscreenButton}

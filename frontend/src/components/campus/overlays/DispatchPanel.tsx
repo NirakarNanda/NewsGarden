@@ -60,12 +60,14 @@ export default function DispatchPanel() {
     "w-full rounded-lg border border-white/10 bg-[#0f1626] px-2 py-1.5 text-[12px] text-[#dfe4ff] outline-none focus:border-[#4aa8ff]/60";
 
   return (
-    <>
+    <div
+      data-testid="panel-dispatch"
+      data-intro="dispatch"
+      className="relative w-full"
+    >
       <section
-        data-testid="panel-dispatch"
-        data-intro="dispatch"
-        className={panelClass}
-        style={{ left: 1255, top: 758, width: 276, height: 44, background: panelBg }}
+        className={`${panelClass} relative w-full`}
+        style={{ height: 44, background: panelBg }}
       >
         <button
           type="button"
@@ -93,13 +95,11 @@ export default function DispatchPanel() {
           role="dialog"
           aria-label="Dispatch a task"
           data-testid="panel-dispatch-overlay"
-          className={panelClass}
+          className={`${panelClass} absolute left-0 w-full`}
           style={{
-            left: 1255,
-            // Overlay opens upward from the collapsed 44px bar (top 758):
-            // its bottom edge sits exactly on the bar's top edge.
-            top: 526,
-            width: 276,
+            // Overlay opens upward from the collapsed 44px bar: its bottom
+            // edge sits exactly on the bar's top edge.
+            bottom: 44,
             height: 232,
             background: panelBg,
             zIndex: 40,
@@ -160,6 +160,6 @@ export default function DispatchPanel() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

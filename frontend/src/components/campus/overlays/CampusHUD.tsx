@@ -34,25 +34,28 @@ export default function CampusHUD() {
 
   return (
     <div
-      className="absolute rounded-[14px] border border-white/5 bg-white/[0.03]"
-      style={{ left: 11, top: 8, width: 254, height: 66, padding: "9px 14px" }}
+      data-testid="campus-hud"
+      className="w-full rounded-[14px] border border-white/5 bg-white/[0.03]"
+      style={{ padding: "8px 12px" }}
     >
-      <div className="flex items-center justify-between">
-        <div className="text-[14px] leading-5 text-[#a9b0d0]">{date}</div>
-        {/* Sun sits at right:14 — keep the pill clear of it. */}
-        <div className="mr-7">
-          <ConnectionPill />
+      {/* Row 1: date left, connection pill right — flex keeps them apart. */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="truncate text-[13px] leading-5 text-[#a9b0d0]">{date}</div>
+        <ConnectionPill />
+      </div>
+      {/* Row 2: the time, with the sun riding beside it in-flow — nothing
+          overlaps because nothing is absolutely positioned here. */}
+      <div className="mt-0.5 flex items-center justify-between gap-2">
+        <div className="leading-7 text-[#eef0ff]">
+          <span className="text-[28px] font-normal tracking-[0.02em]">
+            {hh}
+            <span ref={colon}>:</span>
+            {mm}
+          </span>{" "}
+          <span className="text-[18px] font-light">{meridiem}</span>
         </div>
+        <Sun ref={sun} className="shrink-0 text-[#fff1b8]" size={20} />
       </div>
-      <div className="mt-px leading-8 text-[#eef0ff]">
-        <span className="text-[30px] font-normal tracking-[0.02em]">
-          {hh}
-          <span ref={colon}>:</span>
-          {mm}
-        </span>{" "}
-        <span className="text-[20px] font-light">{meridiem}</span>
-      </div>
-      <Sun ref={sun} className="absolute text-[#fff1b8]" size={22} style={{ right: 14, top: 12 }} />
     </div>
   );
 }

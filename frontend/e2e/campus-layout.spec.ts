@@ -17,13 +17,16 @@ import { join } from "node:path";
  *   - Dispatch bar ∩ view controls
  *   - any right-column element ∩ footer bar
  *   - sidebar ∩ right-column panels (sanity)
+ *   - approval banner ∩ HUD clock (when the banner is showing)
  *
- * Desktop right-column design geometry (post-Task 2):
- *   progress:    y 12–404
- *   activity:    y 418–748
- *   dispatch:    y 758–802
- *   controls:    y 812+
- *   footer art:  y ≈ 925+ (translated down by extraY in tall windows)
+ * Desktop right-column design geometry (post flex-column rework): the right
+ * column is a flex column at the stage's right edge (right:5, top:12,
+ * width:276, gap:12) — EditionProgress, ActivityTimeline, Dispatch bar, then
+ * the view controls. EditionProgress grows downward in flow when the
+ * approval banner appears, so siblings never collide.
+ * The left sidebar is 276px, matching the right column; the office building
+ * (art x 131–1246, centre 688.5) is translated +77px so it sits exactly
+ * centred in the free space between the two rails.
  */
 
 type Box = { x: number; y: number; width: number; height: number };
@@ -179,6 +182,60 @@ test("dispatch overlay opens upward from the bar and closes cleanly", async ({
   await overlay.getByRole("button", { name: /close/i }).click();
   await expect(overlay).toHaveCount(0);
   await expect(page.getByTestId("panel-activity-timeline")).toBeVisible();
+});
+
+test("desktop chrome: equal side rails, centred office, scrollable pages, hourly quote", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await page.goto("/");
+  await page.getByTestId("panel-edition-progress").waitFor({ state: "visible" });
+  await page.getByTestId("campus-hud").waitFor({ state: "visible" });
+  await page.getByTestId("footer-quote").first().waitFor({ state: "visible" });
+  await page.waitForTimeout(400);
+
+  const sidebar = page.getByTestId("sidebar");
+  const progress = page.getByTestId("panel-edition-progress");
+  const building = page.getByTestId("campus-building");
+
+  // The left rail matches the right rail (both 276 design px).
+  const s = await box(sidebar);
+  const p = await box(progress);
+  expect(
+    Math.abs(s.width - p.width),
+    `sidebar width (${Math.round(s.width)}) should equal right-column width (${Math.round(p.width)})`,
+  ).toBeLessThanOrEqual(1);
+
+  // The office building's visible art (x 131–1246, centre 688.5 in design
+  // px) is centred in the free space between the two rails. boundingBox
+  // ignores clip-path, so offset by the art coordinates.
+  const b = await box(building);
+  const u = s.width / 276; // stage scale factor
+  const buildingCentre = b.x + 688.5 * u;
+  const freeCentre = (s.x + s.width + p.x) / 2;
+  expect(
+    Math.abs(buildingCentre - freeCentre),
+    `building centre (${Math.round(buildingCentre)}) should match free-space centre (${Math.round(freeCentre)})`,
+  ).toBeLessThanOrEqual(2);
+
+  // The HUD clock and the approval banner must never overlap.
+  const banner = page.getByTestId("banner-ready-for-approval");
+  if (await banner.isVisible()) {
+    await assertNoOverlap(page, page.getByTestId("campus-hud"), banner, "HUD clock", "approval banner");
+  }
+
+  // The footer shows a quote of the hour with its hour label.
+  const quote = page.getByTestId("footer-quote").first();
+  const quoteText = (await quote.textContent()) ?? "";
+  expect(quoteText.trim().length, "footer quote should not be empty").toBeGreaterThan(10);
+  const labelText = (await page.getByTestId("footer-quote-label").first().textContent()) ?? "";
+  expect(labelText).toMatch(/QUOTE OF THE HOUR · \d{2}:00/);
+
+  // Ordinary pages must scroll — the old global overflow:hidden is gone.
+  await page.goto("/newsroom");
+  await page.waitForTimeout(300);
+  const overflowY = await page.evaluate(() => getComputedStyle(document.body).overflowY);
+  expect(overflowY, "body must not lock vertical scrolling").not.toBe("hidden");
 });
 
 test("compact <768px: panels stack in flow, controls are not fixed", async ({ page }) => {
