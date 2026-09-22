@@ -88,11 +88,22 @@ export class ImageAgent
 
       const image =
         await this.imageGenerator.generatePhoto(
-          brief
+          brief,
+          {
+            topic:
+              article.headline ??
+              article.title,
+          }
         );
 
       article.imageUrl =
         image.path;
+
+      article.imageCredit =
+        image.credit;
+
+      article.imageSourceUrl =
+        image.sourcePageUrl;
 
       await article.save();
 
@@ -117,6 +128,15 @@ export class ImageAgent
 
           placeholder:
             image.placeholder,
+
+          credit:
+            image.credit,
+
+          imageSourceUrl:
+            image.sourcePageUrl,
+
+          licenseName:
+            image.licenseName,
 
           model:
             aiProviderName(),

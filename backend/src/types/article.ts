@@ -22,6 +22,11 @@ export interface ArticleView {
 
   imageUrl?: string;
 
+  // Attribution for web-sourced images.
+  imageCredit?: string;
+
+  imageSourceUrl?: string;
+
   // ISO datetime strings.
   publishedAt?: string;
 
@@ -55,6 +60,11 @@ export interface ArticleData {
   body?: string;
 
   imageUrl?: string;
+
+  // Attribution for web-sourced images.
+  imageCredit?: string;
+
+  imageSourceUrl?: string;
 
   // Added after event clustering.
   eventId?: string;

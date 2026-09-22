@@ -74,6 +74,11 @@ function toArticleView(
 
     imageUrl?: string;
 
+    // Attribution for web-sourced images.
+    imageCredit?: string;
+
+    imageSourceUrl?: string;
+
     publishedAt?: Date;
 
     discoveredAt: Date;
@@ -101,6 +106,10 @@ function toArticleView(
     body: article.body,
 
     imageUrl: article.imageUrl,
+
+    imageCredit: article.imageCredit,
+
+    imageSourceUrl: article.imageSourceUrl,
 
     publishedAt: article.publishedAt?.toISOString(),
 

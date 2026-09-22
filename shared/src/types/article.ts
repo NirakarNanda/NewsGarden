@@ -33,6 +33,11 @@ export interface Article {
 
   imageUrl?: string;
 
+  // Attribution for web-sourced images.
+  imageCredit?: string;
+
+  imageSourceUrl?: string;
+
   author?: string;
 
   // Which AI model produced this article's content.

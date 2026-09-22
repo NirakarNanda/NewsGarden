@@ -75,6 +75,15 @@ const articleSchema =
         type: String,
       },
 
+      // Attribution for web-sourced images.
+      imageCredit: {
+        type: String,
+      },
+
+      imageSourceUrl: {
+        type: String,
+      },
+
       // Added after event clustering.
       eventId: {
         type: String,

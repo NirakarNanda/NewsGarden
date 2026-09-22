@@ -60,6 +60,11 @@ export default function ArticleHero({
               onError={() => setImgBroken(true)}
               className="aspect-[16/9] w-full object-cover"
             />
+            {article.imageCredit && (
+              <figcaption className="bg-[#f7f2e7] px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[#221c12]/55">
+                {article.imageCredit}
+              </figcaption>
+            )}
           </figure>
         ))}
       {article.summary && (

@@ -25,6 +25,10 @@ export interface Article {
   category: string;
   status: ArticleStatus;
   imageUrl?: string;
+  /** Attribution line for web-sourced images. */
+  imageCredit?: string;
+  /** Source page the web-sourced image came from. */
+  imageSourceUrl?: string;
   /** ISO timestamp. */
   publishedAt?: string;
 }
@@ -42,6 +46,8 @@ export function normalizeArticle(r: Record<string, unknown>): Article {
     category: str(r.category, "General"),
     status: isStatus(r.status) ? r.status : "discovered",
     imageUrl: opt(r.imageUrl ?? r.image),
+    imageCredit: opt(r.imageCredit),
+    imageSourceUrl: opt(r.imageSourceUrl),
     publishedAt: opt(r.publishedAt),
   };
 }
