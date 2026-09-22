@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
 
@@ -50,7 +51,7 @@ export default function FooterBar() {
         />
       </svg>
 
-      <img src="/ui/leaf.png" alt="" className="foot-leaf absolute" style={{ left: 78, top: 956, width: 36, height: 34 }} />
+      <Image src="/ui/leaf.png" alt="" width={36} height={34} className="foot-leaf absolute" style={{ left: 78, top: 956 }} unoptimized />
       <p className="absolute m-0 text-[10.5px] leading-[13.5px] text-[#b9c0d8]" style={{ left: 146, top: 944 }}>
         A curious<br />newsroom<br />for a brighter<br />tomorrow.
       </p>
@@ -61,7 +62,7 @@ export default function FooterBar() {
       <p className="absolute m-0 text-right text-[10px] text-[#9aa3c6]" style={{ right: 186, top: 978 }}>
         – The AI Newsroom
       </p>
-      <img src="/ui/footer-cat.png" alt="" className="foot-cat absolute" style={{ left: 1380, top: 926, width: 114, height: 80 }} />
+      <Image src="/ui/footer-cat.png" alt="" width={114} height={80} className="foot-cat absolute" style={{ left: 1380, top: 926 }} unoptimized />
     </div>
   );
 }

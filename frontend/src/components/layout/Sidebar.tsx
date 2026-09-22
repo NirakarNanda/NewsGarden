@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
 import Link from "next/link";
@@ -47,7 +48,7 @@ export default function Sidebar() {
       style={{ left: 0, top: 0, width: 130, height: 888, borderRadius: "0 0 22px 0" }}
     >
       <span className="side-glow absolute rounded-full" style={{ left: 12, top: 26, width: 46, height: 40, background: "radial-gradient(circle, rgba(255,214,110,0.55), transparent 70%)" }} />
-      <img src="/ui/logo-moon.png" alt="" className="side-moon absolute" style={{ left: 14, top: 22, width: 42, height: 46 }} />
+      <Image src="/ui/logo-moon.png" alt="" width={42} height={46} className="side-moon absolute" style={{ left: 14, top: 22 }} unoptimized />
       <div className="absolute text-[11px] leading-none text-[#dfe4ff]" style={{ left: 57, top: 29 }}>
         The Daily
       </div>
@@ -81,7 +82,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <img src="/ui/sidebar-cat.png" alt="" className="side-cat absolute" style={{ left: 14, top: 731, width: 78, height: 42 }} />
+      <Image src="/ui/sidebar-cat.png" alt="" width={78} height={42} className="side-cat absolute" style={{ left: 14, top: 731 }} unoptimized />
       <p className="absolute m-0 text-[12.5px] leading-[15px] text-[#cfd5ee]" style={{ left: 19, top: 775 }}>
         Good<br />Ideas<br />Better<br />Tomorrows
       </p>

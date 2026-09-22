@@ -8,6 +8,9 @@
     "format": "prettier --write .",
     "lint": "npm run lint --workspaces --if-present",
     "predev": "npm run build --workspace=@newsgarden/shared",
+    "prelint": "npm run build --workspace=@newsgarden/shared",
+    "pretest": "npm run build --workspace=@newsgarden/shared",
+    "pretypecheck": "npm run build --workspace=@newsgarden/shared",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspace=@newsgarden/shared --if-present && npm run typecheck --workspaces --if-present"
   },

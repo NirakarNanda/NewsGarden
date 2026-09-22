@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useEffect, useRef } from "react";
+import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
 import type { SpriteDef } from "@/lib/sprites";
@@ -68,7 +69,7 @@ function build(el: HTMLElement, def: SpriteDef) {
 
 export default memo(function AgentSprite({ def, status }: { def: SpriteDef; status?: AgentStatus }) {
   const wrap = useRef<HTMLDivElement>(null);
-  const img = useRef<HTMLImageElement>(null);
+  const img = useRef<HTMLDivElement>(null);
   const loop = useRef<gsap.core.Timeline | null>(null);
   const prev = useRef<AgentStatus | undefined>(status);
 
@@ -94,13 +95,17 @@ export default memo(function AgentSprite({ def, status }: { def: SpriteDef; stat
       ref={wrap}
       style={{ position: "absolute", left: def.x, top: def.y, width: def.w, height: def.h, pointerEvents: "none" }}
     >
-      <img
-        ref={img}
-        src={`/campus/${def.group}/${def.id}.png`}
-        alt=""
-        draggable={false}
-        style={{ width: "100%", height: "100%", display: "block" }}
-      />
+      <div ref={img} style={{ width: "100%", height: "100%" }}>
+        <Image
+          src={`/campus/${def.group}/${def.id}.png`}
+          alt=""
+          width={def.w}
+          height={def.h}
+          draggable={false}
+          style={{ width: "100%", height: "100%", display: "block" }}
+          unoptimized
+        />
+      </div>
     </div>
   );
 });

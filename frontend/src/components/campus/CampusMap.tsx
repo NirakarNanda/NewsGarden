@@ -1,6 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
+import Image from "next/image";
 import { useAgents } from "@/features/agents/useAgents";
 import { BUBBLES } from "@/lib/constants";
 import { bubbleFor, pickAgent } from "@/lib/campus";
@@ -24,10 +25,13 @@ import Emote from "@/components/campus/objects/Emotes";
  */
 const StaticSprite = memo(function StaticSprite({ def }: { def: (typeof SPRITES)[number] }) {
   return (
-    <img
+    <Image
       src={`/campus/${def.group}/${def.id}.png`}
       alt=""
-      style={{ position: "absolute", left: def.x, top: def.y, width: def.w, height: def.h }}
+      width={def.w}
+      height={def.h}
+      style={{ position: "absolute", left: def.x, top: def.y }}
+      unoptimized
     />
   );
 });

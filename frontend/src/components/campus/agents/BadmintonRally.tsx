@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 import { gsap } from "@/lib/gsap";
 import { motionOK } from "@/lib/motion";
 import { SPRITES } from "@/lib/sprites";
@@ -45,12 +46,15 @@ export default function BadmintonRally() {
   }, []);
 
   const cat = (d: typeof L, cls: string) => (
-    <img
+    <Image
       className={cls}
       src={`/campus/characters/${d.id}.png`}
       alt=""
+      width={d.w}
+      height={d.h}
       draggable={false}
-      style={{ position: "absolute", left: d.x, top: d.y, width: d.w, height: d.h }}
+      style={{ position: "absolute", left: d.x, top: d.y }}
+      unoptimized
     />
   );
 
