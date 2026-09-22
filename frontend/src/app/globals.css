@@ -39,4 +39,19 @@ body {
     max-width: 430px !important;
     margin: 0 auto 14px !important;
   }
+  /* The dispatch overlay is a div (not a section): in the stacked layout it
+   * must flow in place instead of floating at desktop stage coordinates. */
+  .campus-panel-stack > [data-testid="panel-dispatch-overlay"] {
+    position: relative !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 430px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 auto 14px !important;
+    z-index: auto !important;
+  }
 }

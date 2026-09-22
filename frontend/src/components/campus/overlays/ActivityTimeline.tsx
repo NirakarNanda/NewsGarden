@@ -29,7 +29,9 @@ export default function ActivityTimeline() {
   const live = source === "api";
   const demo = source === "mock";
   // API is newest-first; the timeline reads oldest → newest.
-  const rows = data.slice(0, 6).reverse();
+  // The campus panel shows the 4 most recent; the full list lives
+  // on /newsroom/activity ("View all").
+  const rows = data.slice(0, 4).reverse();
   const listRef = useRef<HTMLOListElement>(null);
   const newest = rows[rows.length - 1]?.id;
   const seen = useRef<string | undefined>(undefined);
@@ -69,7 +71,7 @@ export default function ActivityTimeline() {
         };
 
   return (
-    <section data-intro="panel" className={panelClass} style={{ left: 1255, top: 418, width: 276, height: 418, background: panelBg }}>
+    <section data-testid="panel-activity-timeline" data-intro="panel" className={panelClass} style={{ left: 1255, top: 418, width: 276, height: 330, background: panelBg }}>
       <span className="absolute size-3" style={{ left: 22, top: 27 }}>
         <span className={cx("absolute inset-0 rounded-full", live ? "animate-ping bg-[#4ade80]/60" : demo ? "bg-[#7aa2ff]/60" : "bg-[#f26a6a]/60")} />
         <span className={cx("absolute inset-0 rounded-full", live ? "bg-[#4ade80] shadow-[0_0_8px_#4ade80]" : demo ? "bg-[#7aa2ff]" : "bg-[#5a6285]")} />
@@ -119,7 +121,7 @@ export default function ActivityTimeline() {
       </ol>
       )}
 
-      <Link href="/newsroom/activity" className={ghostButton} style={{ left: 15, top: 370, width: 244, height: 34 }}>
+      <Link href="/newsroom/activity" className={ghostButton} style={{ left: 15, top: 284, width: 244, height: 34 }}>
         <span className="flex items-center gap-2">
           View All Activity <ArrowRight size={15} />
         </span>

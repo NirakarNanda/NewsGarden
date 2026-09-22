@@ -38,6 +38,7 @@ export default function Sidebar() {
   return (
     <aside
       ref={root}
+      data-testid="sidebar"
       data-intro="sidebar"
       className="absolute border-r border-white/5 bg-[#141b29] shadow-[4px_0_18px_rgba(0,0,0,0.35)]"
       style={{ left: 0, top: 0, width: 130, height: 888, borderRadius: "0 0 22px 0" }}

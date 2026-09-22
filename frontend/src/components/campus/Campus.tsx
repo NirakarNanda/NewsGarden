@@ -250,6 +250,7 @@ export default function Campus() {
   const viewToggle = (
     <button
       type="button"
+      data-testid="btn-text-view"
       onClick={() => setTextMode((m) => !m)}
       aria-pressed={textMode}
       title={textMode ? "Back to the visual campus scene" : "Text-only agent list"}
@@ -262,6 +263,7 @@ export default function Campus() {
   const fullscreenButton = (
     <button
       type="button"
+      data-testid="btn-fullscreen"
       onClick={toggleFullscreen}
       aria-label={isFull ? "Exit full screen" : "Enter full screen"}
       title={isFull ? "Exit full screen" : "Full screen"}
@@ -320,16 +322,17 @@ export default function Campus() {
           ))}
         </nav>
 
+        {/* View controls sit in the flow in compact mode — no fixed corners. */}
+        <div data-testid="view-controls" className="flex items-center gap-2 px-3 pb-3">
+          {viewToggle}
+          {fullscreenButton}
+        </div>
+
         {/* Panels stacked — .campus-panel-stack CSS makes each section static */}
-        <div className="campus-panel-stack px-3 pb-24">
+        <div className="campus-panel-stack px-3 pb-6">
           <EditionProgress />
           <ActivityTimeline />
           <DispatchPanel />
-        </div>
-
-        <div className="fixed right-3 bottom-3 z-50 flex items-center gap-2">
-          {viewToggle}
-          {fullscreenButton}
         </div>
       </div>
     );
@@ -363,6 +366,16 @@ export default function Campus() {
             <EditionProgress />
             <ActivityTimeline />
             <DispatchPanel />
+            {/* View controls live in the right column under the dispatch bar —
+                never in a fixed corner where they could collide with the footer. */}
+            <div
+              data-testid="view-controls"
+              className="absolute flex items-center gap-2"
+              style={{ left: 1255, top: 812, width: 276 }}
+            >
+              {viewToggle}
+              {fullscreenButton}
+            </div>
           </div>
         </div>
 
@@ -400,11 +413,6 @@ export default function Campus() {
             <FooterBar />
           )}
         </div>
-      </div>
-
-      <div className="fixed right-3 bottom-3 z-50 flex items-center gap-2">
-        {viewToggle}
-        {fullscreenButton}
       </div>
     </div>
   );

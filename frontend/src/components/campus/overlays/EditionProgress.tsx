@@ -65,7 +65,7 @@ export default function EditionProgress() {
   }, []);
 
   return (
-    <section ref={root} data-intro="panel" className={panelClass} style={{ left: 1255, top: 12, width: 276, height: 392, background: panelBg }}>
+    <section ref={root} data-testid="panel-edition-progress" data-intro="panel" className={panelClass} style={{ left: 1255, top: 12, width: 276, height: 392, background: panelBg }}>
       <CampusHUD />
 
       <div className="absolute" style={{ left: 24, top: 90 }}>

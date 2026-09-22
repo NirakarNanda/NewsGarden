@@ -42,6 +42,7 @@ export default function FooterBar() {
           </linearGradient>
         </defs>
         <path
+          data-testid="footer-bar"
           d="M54 925 H372 Q386 925 390 938 L396 952 Q400 965 414 965 H1000 Q1014 965 1018 952 L1022 936 Q1026 922 1040 922 H1500 Q1515 922 1515 937 V1000 Q1515 1015 1500 1015 H54 Q40 1015 40 1000 V939 Q40 925 54 925 Z"
           fill="url(#bar)"
           stroke="rgba(140,155,200,0.22)"
