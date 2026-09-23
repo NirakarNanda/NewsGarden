@@ -55,7 +55,7 @@ function FooterClock() {
   }, []);
   const p = (n: number) => String(n).padStart(2, "0");
   return (
-    <div className="absolute" style={{ left: 372, top: 936 }}>
+    <div className="absolute" style={{ left: 372, top: 912 }}>
       <p className="m-0 text-[12px] font-medium uppercase tracking-[0.18em] text-[#8b93b8]">
         Local time
       </p>
@@ -96,7 +96,7 @@ function EditionStatusPill() {
 
   const cls =
     "pointer-events-auto absolute flex max-w-[220px] items-center gap-2 truncate rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[13px] font-medium backdrop-blur-sm transition-colors";
-  const style = { left: 540, top: 948 } as const;
+  const style = { left: 540, top: 924 } as const;
 
   if (!runState.running && inReview.length > 0) {
     return (
@@ -169,7 +169,6 @@ export default function FooterBar() {
     let alive = true;
     const ctx = gsap.context(() => {
       gsap.to(".foot-cat", { scaleY: 1.05, scaleX: 0.99, transformOrigin: "50% 100%", duration: 2.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
-      gsap.to(".foot-leaf", { rotation: 7, transformOrigin: "50% 100%", duration: 2.6, yoyo: true, repeat: -1, ease: "sine.inOut" });
       gsap.to(".foot-badge", { y: -3, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut" });
       gsap.fromTo(".foot-glow", { opacity: 0.35 }, { opacity: 0.65, duration: 3.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
       // Occasional ear twitch on the footer cat.
@@ -184,7 +183,7 @@ export default function FooterBar() {
         if (!alive) return;
         const el = document.createElement("span");
         el.textContent = "z";
-        Object.assign(el.style, { position: "absolute", left: "1462px", top: "936px", fontSize: "12px", color: "#c5cbe6", fontFamily: "var(--font-pixel)" });
+        Object.assign(el.style, { position: "absolute", left: "1462px", top: "910px", fontSize: "12px", color: "#c5cbe6", fontFamily: "var(--font-pixel)" });
         root.current?.appendChild(el);
         gsap.fromTo(el, { y: 0, x: 0, opacity: 0, scale: 0.7 }, { y: -22, x: 10, opacity: 1, scale: 1.3, duration: 2.4, ease: "sine.out", onComplete: () => el.remove() });
         gsap.to(el, { opacity: 0, duration: 0.8, delay: 1.6 });
@@ -212,7 +211,7 @@ export default function FooterBar() {
         </defs>
         <path
           data-testid="footer-bar"
-          d="M54 925 H372 Q386 925 390 938 L396 952 Q400 965 414 965 H1000 Q1014 965 1018 952 L1022 936 Q1026 922 1040 922 H1500 Q1515 922 1515 937 V1000 Q1515 1015 1500 1015 H54 Q40 1015 40 1000 V939 Q40 925 54 925 Z"
+          d="M54 901 H372 Q386 901 390 914 L396 928 Q400 941 414 941 H1000 Q1014 941 1018 928 L1022 912 Q1026 898 1040 898 H1500 Q1515 898 1515 913 V1000 Q1515 1015 1500 1015 H54 Q40 1015 40 1000 V915 Q40 901 54 901 Z"
           fill="url(#bar)"
           stroke="rgba(140,155,200,0.22)"
           strokeWidth="2"
@@ -224,9 +223,9 @@ export default function FooterBar() {
         className="foot-glow absolute"
         style={{
           left: 990,
-          top: 922,
+          top: 898,
           width: 430,
-          height: 96,
+          height: 110,
           background: "radial-gradient(ellipse at center, rgba(255,196,120,0.14), transparent 70%)",
         }}
       />
@@ -235,22 +234,22 @@ export default function FooterBar() {
       <div
         className="foot-badge absolute grid place-items-center rounded-full"
         style={{
-          left: 30,
-          top: 947,
-          width: 44,
-          height: 44,
+          left: 28,
+          top: 921,
+          width: 52,
+          height: 52,
           background: "radial-gradient(circle at 35% 30%, #1e2942, #0d1322 75%)",
           border: "1.5px solid rgba(255,209,140,0.45)",
           boxShadow: "0 2px 10px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}
       >
-        <span style={{ fontFamily: SERIF, fontSize: 24, color: "#ffd9a0", lineHeight: 1 }}>N</span>
+        <span style={{ fontFamily: SERIF, fontSize: 28, color: "#ffd9a0", lineHeight: 1 }}>N</span>
       </div>
 
-      <Image src="/ui/leaf.png" alt="" width={32} height={30} className="foot-leaf absolute" style={{ left: 86, top: 959 }} unoptimized />
+      <Image src="/ui/leaf.png" alt="" width={36} height={34} className="foot-leaf absolute" style={{ left: 92, top: 933 }} unoptimized />
       <p
         className="absolute m-0"
-        style={{ left: 126, top: 950, fontFamily: SERIF, fontStyle: "italic", fontSize: 14, lineHeight: "19px", color: "#c3c9e2" }}
+        style={{ left: 136, top: 924, fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, lineHeight: "21px", color: "#c3c9e2" }}
       >
         A curious newsroom<br />for a brighter tomorrow.
       </p>
@@ -262,7 +261,7 @@ export default function FooterBar() {
       <p
         data-testid="footer-quote-label"
         className="absolute m-0 text-right"
-        style={{ right: 200, top: 936, fontSize: 12, letterSpacing: "0.18em", color: "#8b93b8", fontWeight: 500 }}
+        style={{ right: 200, top: 910, fontSize: 13, letterSpacing: "0.18em", color: "#8b93b8", fontWeight: 500 }}
       >
         QUOTE OF THE HOUR · {hourLabel}
       </p>
@@ -270,15 +269,15 @@ export default function FooterBar() {
         ref={quoteRef}
         data-testid="footer-quote"
         className="absolute m-0 text-right"
-        style={{ right: 200, top: 954, width: 400, fontFamily: SERIF, fontStyle: "italic", fontSize: 17.5, lineHeight: "23px", color: "#e8ebfa" }}
+        style={{ right: 200, top: 930, width: 420, fontFamily: SERIF, fontStyle: "italic", fontSize: 19, lineHeight: "25px", color: "#e8ebfa" }}
       >
         &ldquo;{quote}&rdquo;
       </p>
-      <p className="absolute m-0 text-right text-[12px] text-[#9aa3c6]" style={{ right: 200, top: 992 }}>
+      <p className="absolute m-0 text-right text-[13px] text-[#9aa3c6]" style={{ right: 200, top: 986 }}>
         – The AI Newsroom
       </p>
-      <div ref={catWrap} className="absolute" style={{ left: 1380, top: 926 }}>
-        <Image src="/ui/footer-cat.png" alt="" width={114} height={80} className="foot-cat block" unoptimized />
+      <div ref={catWrap} className="absolute" style={{ left: 1380, top: 900 }}>
+        <Image src="/ui/footer-cat.png" alt="" width={122} height={86} className="foot-cat block" unoptimized />
       </div>
     </div>
   );

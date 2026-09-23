@@ -48,7 +48,7 @@ function SideClock() {
 }
 
 /**
- * Left rail — 276px, matching the right column, so the office building sits
+ * Left rail — 320px, matching the right column, so the office building sits
  * exactly centred in the free space between the two side rails.
  *
  * Now a flex column: brand + live clock, bigger nav, an "awaiting approval"
@@ -127,7 +127,7 @@ export default function Sidebar() {
       style={{
         left: 0,
         top: 0,
-        width: 276,
+        width: 320,
         height: 888,
         borderRadius: "0 0 22px 0",
         background: "linear-gradient(180deg, #151c31 0%, #101627 55%, #0c1222 100%)",

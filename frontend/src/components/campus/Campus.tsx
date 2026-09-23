@@ -105,8 +105,8 @@ function lawnDecor(extra: number): SpriteDef[] {
     .filter((s): s is SpriteDef => !!s);
   const rand = lcg(7);
   const gutters = [
-    { from: 288, to: 208 + extra / 2 - 12 }, // left of the building, clear of the 276px sidebar
-    { from: 1323 + extra / 2 + 12, to: 1240 + extra - 12 }, // right of the building
+    { from: 332, to: 208 + extra / 2 - 12 }, // left of the building, clear of the 320px sidebar
+    { from: 1323 + extra / 2 + 12, to: 1196 + extra - 12 }, // right of the building, clear of the 320px right column
   ];
   const out: SpriteDef[] = [];
   for (const g of gutters) {
@@ -230,7 +230,7 @@ export default function Campus() {
 
       {/* The campus building, centred between the two equal side rails and
           cropped to remove baked-in UI. The art's building spans x 131–1246
-          (centre 688.5); the free space between the 276px sidebars is centred
+          (centre 688.5); the free space between the 320px sidebars is centred
           at 765.5, so +77px keeps the office exactly centred. */}
       <div data-testid="campus-building" style={{ ...frame, transform: `translateX(${Math.round(extraX / 2 + 77)}px)`, clipPath: BUILDING_CLIP }}>
         <CampusMap />
@@ -366,7 +366,7 @@ export default function Campus() {
         {/* Right edge: the panels flow in a flex column so each card's height
             can breathe (e.g. the approval banner) without ever overlapping
             a sibling or the footer. */}
-        <div className="absolute" style={{ right: 5, top: 12, width: 276, pointerEvents: "none" }}>
+        <div className="absolute" style={{ right: 5, top: 12, width: 320, pointerEvents: "none" }}>
           <div className="flex flex-col" style={{ gap: 12, pointerEvents: "auto" }}>
             <EditionProgress />
             <ActivityTimeline />

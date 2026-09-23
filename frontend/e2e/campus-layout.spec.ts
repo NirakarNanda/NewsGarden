@@ -21,10 +21,10 @@ import { join } from "node:path";
  *
  * Desktop right-column design geometry (post flex-column rework): the right
  * column is a flex column at the stage's right edge (right:5, top:12,
- * width:276, gap:12) — EditionProgress, ActivityTimeline, Dispatch bar, then
+ * width:320, gap:12) — EditionProgress, ActivityTimeline, Dispatch bar, then
  * the view controls. EditionProgress grows downward in flow when the
  * approval banner appears, so siblings never collide.
- * The left sidebar is 276px, matching the right column; the office building
+ * The left sidebar is 320px, matching the right column; the office building
  * (art x 131–1246, centre 688.5) is translated +77px so it sits exactly
  * centred in the free space between the two rails.
  */
@@ -198,7 +198,7 @@ test("desktop chrome: equal side rails, centred office, scrollable pages, hourly
   const progress = page.getByTestId("panel-edition-progress");
   const building = page.getByTestId("campus-building");
 
-  // The left rail matches the right rail (both 276 design px).
+  // The left rail matches the right rail (both 320 design px).
   const s = await box(sidebar);
   const p = await box(progress);
   expect(
@@ -210,7 +210,7 @@ test("desktop chrome: equal side rails, centred office, scrollable pages, hourly
   // px) is centred in the free space between the two rails. boundingBox
   // ignores clip-path, so offset by the art coordinates.
   const b = await box(building);
-  const u = s.width / 276; // stage scale factor
+  const u = s.width / 320; // stage scale factor
   const buildingCentre = b.x + 688.5 * u;
   const freeCentre = (s.x + s.width + p.x) / 2;
   expect(

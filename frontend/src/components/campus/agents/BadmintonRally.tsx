@@ -101,6 +101,9 @@ export default function BadmintonRally() {
 
       /** One point: a rally of 2–5 exchanges, ending in a smash winner. */
       const playPoint = () => {
+        // The shuttle's x is relative and accumulates across exchanges —
+        // snap it back to the server's racket or it drifts out of the court.
+        gsap.set(sh, { x: 0, y: 0 });
         const tl = gsap.timeline({ onComplete: () => gsap.delayedCall(1.15, playPoint) });
         const exchanges = 2 + Math.floor(Math.random() * 4);
         let toRight = true; // left cat serves first
