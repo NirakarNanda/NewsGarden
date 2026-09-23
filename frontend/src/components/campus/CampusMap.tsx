@@ -11,6 +11,8 @@ import type { AgentLocation } from "@/types/agent";
 import AgentBubble from "@/components/campus/agents/AgentBubble";
 import AgentSprite from "@/components/campus/agents/AgentSprite";
 import BadmintonRally from "@/components/campus/agents/BadmintonRally";
+import CampusMood from "@/components/campus/agents/CampusMood";
+import CampusChatter from "@/components/campus/agents/CampusChatter";
 import Monitors from "@/components/campus/objects/Computer";
 import Lamps from "@/components/campus/objects/Lamp";
 import Steam from "@/components/campus/objects/CoffeeMachine";
@@ -67,6 +69,8 @@ export default function CampusMap() {
         return <AgentSprite key={def.id} def={def} status={locs ? pickAgent(agents, locs)?.status : undefined} />;
       })}
       <BadmintonRally />
+      <CampusMood />
+      <CampusChatter />
 
       <Twinkle />
       <Monitors working={working} />

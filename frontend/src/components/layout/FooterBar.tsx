@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { gsap } from "@/lib/gsap";
 import { motionOK, rand } from "@/lib/motion";
+import { useInReviewEditions } from "@/features/editions/useInReviewEditions";
+import { useEditionRun } from "@/features/editions/useEditionRun";
 
 /** One line for every hour — the newsroom always has something to say. */
 const QUOTES: string[] = [
@@ -43,9 +46,82 @@ function msToNextHour() {
   return (60 - n.getMinutes()) * 60_000 - n.getSeconds() * 1000 - n.getMilliseconds() + 60;
 }
 
+/** Live clock — ticks every second. */
+function FooterClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return (
+    <div className="absolute" style={{ left: 372, top: 936 }}>
+      <p className="m-0 text-[12px] font-medium uppercase tracking-[0.18em] text-[#8b93b8]">
+        Local time
+      </p>
+      <p className="m-0 mt-0.5 tabular-nums text-[24px] font-semibold leading-none text-[#eef1ff]">
+        {p(now.getHours())}:{p(now.getMinutes())}
+        <span className="text-[15px] font-medium text-[#8b93b8]">:{p(now.getSeconds())}</span>
+      </p>
+    </div>
+  );
+}
+
+/** Live newsroom status pill: run in progress, editions awaiting approval, or idle. */
+function EditionStatusPill() {
+  const { data: inReview } = useInReviewEditions();
+  const { runState } = useEditionRun();
+
+  const inner = runState.running ? (
+    <>
+      <span className="h-2 w-2 animate-pulse rounded-full bg-sky-400" aria-hidden />
+      <span className="text-sky-200">Edition run in progress…</span>
+    </>
+  ) : inReview.length > 0 ? (
+    <>
+      <span className="relative flex h-2 w-2" aria-hidden>
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-300 opacity-60" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-300" />
+      </span>
+      <span className="text-amber-200">
+        {inReview.length} edition{inReview.length === 1 ? "" : "s"} awaiting approval
+      </span>
+    </>
+  ) : (
+    <>
+      <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden />
+      <span className="text-[#a9b4d8]">Newsroom idle</span>
+    </>
+  );
+
+  const cls =
+    "pointer-events-auto absolute flex max-w-[220px] items-center gap-2 truncate rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-[13px] font-medium backdrop-blur-sm transition-colors";
+  const style = { left: 540, top: 948 } as const;
+
+  if (!runState.running && inReview.length > 0) {
+    return (
+      <Link
+        href="/newsroom/editions"
+        data-testid="footer-edition-status"
+        className={`${cls} hover:border-amber-300/40 hover:bg-amber-400/10`}
+        style={style}
+        title="Review editions awaiting approval"
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <div data-testid="footer-edition-status" className={cls} style={style}>
+      {inner}
+    </div>
+  );
+}
+
 export default function FooterBar() {
   const root = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLParagraphElement>(null);
+  const catWrap = useRef<HTMLDivElement>(null);
   const [hour, setHour] = useState(currentHour);
   const firstRender = useRef(true);
 
@@ -74,7 +150,19 @@ export default function FooterBar() {
       { opacity: 0, y: 8 },
       { opacity: 1, y: 0, duration: 0.9, ease: "power2.out" },
     );
-  }, [hour ]);
+  }, [hour]);
+
+  // The footer cat wakes up and cheers when an edition ships.
+  useEffect(() => {
+    const el = catWrap.current;
+    if (!el) return;
+    const cheer = () => {
+      if (!motionOK()) return;
+      gsap.fromTo(el, { y: 0 }, { y: -16, duration: 0.28, yoyo: true, repeat: 3, ease: "power2.out" });
+    };
+    window.addEventListener("campus:celebrate", cheer);
+    return () => window.removeEventListener("campus:celebrate", cheer);
+  }, []);
 
   useEffect(() => {
     if (!motionOK()) return;
@@ -84,6 +172,13 @@ export default function FooterBar() {
       gsap.to(".foot-leaf", { rotation: 7, transformOrigin: "50% 100%", duration: 2.6, yoyo: true, repeat: -1, ease: "sine.inOut" });
       gsap.to(".foot-badge", { y: -3, duration: 3, yoyo: true, repeat: -1, ease: "sine.inOut" });
       gsap.fromTo(".foot-glow", { opacity: 0.35 }, { opacity: 0.65, duration: 3.2, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      // Occasional ear twitch on the footer cat.
+      const twitch = () => {
+        if (!alive) return;
+        gsap.fromTo(".foot-cat", { rotation: 0 }, { rotation: 2.5, duration: 0.09, yoyo: true, repeat: 3, ease: "sine.inOut" });
+        gsap.delayedCall(rand(4, 9), twitch);
+      };
+      gsap.delayedCall(3, twitch);
       // sleepy "z" drifting off the cat
       const z = () => {
         if (!alive) return;
@@ -155,16 +250,19 @@ export default function FooterBar() {
       <Image src="/ui/leaf.png" alt="" width={32} height={30} className="foot-leaf absolute" style={{ left: 86, top: 959 }} unoptimized />
       <p
         className="absolute m-0"
-        style={{ left: 126, top: 951, fontFamily: SERIF, fontStyle: "italic", fontSize: 13.5, lineHeight: "18px", color: "#c3c9e2" }}
+        style={{ left: 126, top: 950, fontFamily: SERIF, fontStyle: "italic", fontSize: 14, lineHeight: "19px", color: "#c3c9e2" }}
       >
         A curious newsroom<br />for a brighter tomorrow.
       </p>
+
+      <FooterClock />
+      <EditionStatusPill />
 
       {/* Quote of the hour */}
       <p
         data-testid="footer-quote-label"
         className="absolute m-0 text-right"
-        style={{ right: 200, top: 938, fontSize: 9.5, letterSpacing: "0.18em", color: "#8b93b8", fontWeight: 500 }}
+        style={{ right: 200, top: 936, fontSize: 12, letterSpacing: "0.18em", color: "#8b93b8", fontWeight: 500 }}
       >
         QUOTE OF THE HOUR · {hourLabel}
       </p>
@@ -172,14 +270,16 @@ export default function FooterBar() {
         ref={quoteRef}
         data-testid="footer-quote"
         className="absolute m-0 text-right"
-        style={{ right: 200, top: 952, width: 400, fontFamily: SERIF, fontStyle: "italic", fontSize: 15, lineHeight: "20px", color: "#e8ebfa" }}
+        style={{ right: 200, top: 954, width: 400, fontFamily: SERIF, fontStyle: "italic", fontSize: 17.5, lineHeight: "23px", color: "#e8ebfa" }}
       >
         &ldquo;{quote}&rdquo;
       </p>
-      <p className="absolute m-0 text-right text-[10px] text-[#9aa3c6]" style={{ right: 200, top: 994 }}>
+      <p className="absolute m-0 text-right text-[12px] text-[#9aa3c6]" style={{ right: 200, top: 992 }}>
         – The AI Newsroom
       </p>
-      <Image src="/ui/footer-cat.png" alt="" width={114} height={80} className="foot-cat absolute" style={{ left: 1380, top: 926 }} unoptimized />
+      <div ref={catWrap} className="absolute" style={{ left: 1380, top: 926 }}>
+        <Image src="/ui/footer-cat.png" alt="" width={114} height={80} className="foot-cat block" unoptimized />
+      </div>
     </div>
   );
 }
