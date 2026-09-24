@@ -129,6 +129,10 @@ export class ImageGenerator {
         options?.topic?.trim() ||
         prompt;
 
+      console.log(
+        `[ImageGenerator] mode="${this.provider}" topic="${topic.slice(0, 80)}"`
+      );
+
       const web =
         await findTopicalImage(topic);
 
@@ -151,6 +155,10 @@ export class ImageGenerator {
             web.licenseName,
         };
       }
+
+      console.log(
+        `[ImageGenerator] No Commons image for "${topic.slice(0, 60)}"; using placeholder.`
+      );
     }
 
     const url =

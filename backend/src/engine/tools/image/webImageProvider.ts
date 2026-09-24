@@ -346,9 +346,19 @@ export async function findTopicalImage(
       }
     }
 
+    console.log(
+      `[webImageProvider] Commons returned ${pages.length} result(s) for ` +
+        `"${query}" but none had a usable free licence/size.`
+    );
+
     return null;
 
-  } catch {
+  } catch (error) {
+
+    console.log(
+      `[webImageProvider] Commons lookup failed for "${query}": ` +
+        (error instanceof Error ? error.message : "unknown error")
+    );
 
     return null;
   }
