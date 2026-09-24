@@ -65,6 +65,7 @@ const editionSchema =
           "compiled",
           "published",
           "revision-requested",
+          "failed",
         ],
         default: "draft",
         index: true,

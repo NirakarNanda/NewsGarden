@@ -13,6 +13,8 @@ export function editionTone(status: string): BadgeTone {
       return "amber";
     case "revision-requested":
       return "red";
+    case "failed":
+      return "red";
     case "in-progress":
       return "pink";
     default:
