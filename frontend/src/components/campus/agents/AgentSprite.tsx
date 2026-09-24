@@ -65,13 +65,9 @@ function build(el: HTMLElement, def: SpriteDef) {
       tl.to(el, { y: -3, rotation: 2.5, duration: 2.2, ease: "sine.inOut" })
         .to(el, { y: 2, rotation: -2.5, duration: 2.6, ease: "sine.inOut" });
       break;
+    // Decor vegetation stays perfectly still (the sway looked odd).
     case "sway":
-      tl.to(el, { skewX: rand(1.8, 3), duration: rand(2.2, 3.4), ease: "sine.inOut" })
-        .to(el, { skewX: -rand(1.8, 3), duration: rand(2.2, 3.4), ease: "sine.inOut" });
-      break;
     case "tree":
-      tl.to(el, { skewX: 1.6, scaleY: 1.008, duration: rand(3, 4.2), ease: "sine.inOut" })
-        .to(el, { skewX: -1.6, scaleY: 1, duration: rand(3, 4.2), ease: "sine.inOut" });
       break;
   }
   tl.time(rand(0, tl.duration())); // desync neighbours
@@ -116,19 +112,21 @@ export default memo(function AgentSprite({ def, status }: { def: SpriteDef; stat
     return () => ctx.revert();
   }, [def]);
 
-  // Breathing + blinking life layer.
+  // Breathing + blinking life layer — characters only. Decor (trees, bushes,
+  // flowers, sprite plants) stays perfectly still.
   useEffect(() => {
     if (!wrap.current || !motionOK()) return;
+    if (def.group !== "characters") return;
     const life = buildLife(wrap.current);
     return () => {
       life.kill();
     };
   }, [def]);
 
-  // Campus-wide mood reactions: celebration hops, rally shakes.
+  // Campus-wide mood reactions: celebration hops, rally shakes — characters only.
   useEffect(() => {
     const w = wrap.current;
-    if (!w) return;
+    if (!w || def.group !== "characters") return;
     const celebrate = () => {
       if (!motionOK()) return;
       gsap.fromTo(w, { y: 0 }, { y: -14, duration: 0.26, yoyo: true, repeat: 1, ease: "power2.out" });
@@ -147,7 +145,7 @@ export default memo(function AgentSprite({ def, status }: { def: SpriteDef; stat
       window.removeEventListener("campus:celebrate", celebrate);
       window.removeEventListener("campus:rally", rally);
     };
-  }, []);
+  }, [def]);
 
   useEffect(() => {
     const w = wrap.current;

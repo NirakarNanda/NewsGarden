@@ -7,11 +7,14 @@ import { motionOK } from "@/lib/motion";
 import ConnectionPill from "@/components/ui/ConnectionPill";
 
 export default function CampusHUD() {
-  const [now, setNow] = useState(() => new Date());
+  // Mount-gated clock: placeholder until the client takes over, so the
+  // server HTML and the first client render match exactly.
+  const [now, setNow] = useState<Date | null>(null);
   const colon = useRef<HTMLSpanElement>(null);
   const sun = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 15_000);
     return () => clearInterval(id);
   }, []);
@@ -26,10 +29,12 @@ export default function CampusHUD() {
     return () => ctx.revert();
   }, []);
 
-  const date = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+  const date = now
+    ? now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+    : "—";
   const [time, meridiem] = now
-    .toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
-    .split(/\s/);
+    ? now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }).split(/\s/)
+    : ["--:--", ""];
   const [hh, mm] = time.split(":");
 
   return (

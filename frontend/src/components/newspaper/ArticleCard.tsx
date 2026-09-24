@@ -6,7 +6,7 @@ function Byline({ article }: { article: Article }) {
   return (
     <p className="text-[11px] uppercase tracking-widest text-[#221c12]/50">
       {article.source}
-      {article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+      {article.publishedAt ? ` · ${new Date(article.publishedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}
     </p>
   );
 }

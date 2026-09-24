@@ -46,10 +46,12 @@ function msToNextHour() {
   return (60 - n.getMinutes()) * 60_000 - n.getSeconds() * 1000 - n.getMilliseconds() + 60;
 }
 
-/** Live clock — ticks every second. */
+/** Live clock — ticks every second. Mount-gated so the server render and the
+ *  first client render match exactly (no hydration mismatch). */
 function FooterClock() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
@@ -60,8 +62,8 @@ function FooterClock() {
         Local time
       </p>
       <p className="m-0 mt-0.5 tabular-nums text-[24px] font-semibold leading-none text-[#eef1ff]">
-        {p(now.getHours())}:{p(now.getMinutes())}
-        <span className="text-[15px] font-medium text-[#8b93b8]">:{p(now.getSeconds())}</span>
+        {now ? `${p(now.getHours())}:${p(now.getMinutes())}` : "--:--"}
+        <span className="text-[15px] font-medium text-[#8b93b8]">:{now ? p(now.getSeconds()) : "--"}</span>
       </p>
     </div>
   );
@@ -122,11 +124,14 @@ export default function FooterBar() {
   const root = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLParagraphElement>(null);
   const catWrap = useRef<HTMLDivElement>(null);
-  const [hour, setHour] = useState(currentHour);
+  const [hour, setHour] = useState<number | null>(null);
   const firstRender = useRef(true);
 
   // Flip the quote exactly on the hour, then every hour after.
+  // Mount-gated: the first render uses a fixed fallback hour so the server
+  // HTML and the first client render match exactly (no hydration mismatch).
   useEffect(() => {
+    setHour(currentHour());
     let iv: ReturnType<typeof setInterval> | undefined;
     const to = setTimeout(() => {
       setHour(currentHour());
@@ -197,8 +202,9 @@ export default function FooterBar() {
     };
   }, []);
 
-  const quote = QUOTES[hour % QUOTES.length];
-  const hourLabel = `${String(hour).padStart(2, "0")}:00`;
+  const displayHour = hour ?? 12;
+  const quote = QUOTES[displayHour % QUOTES.length];
+  const hourLabel = `${String(displayHour).padStart(2, "0")}:00`;
 
   return (
     <div ref={root} data-intro="footer" className="absolute inset-0 pointer-events-none">

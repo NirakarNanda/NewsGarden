@@ -37,7 +37,7 @@ export default function ArticleHero({
       <p className="mt-3 text-xs uppercase tracking-widest text-[#221c12]/50">
         {article.source}
         {article.publishedAt
-          ? ` · ${new Date(article.publishedAt).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`
+          ? ` · ${new Date(article.publishedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`
           : ""}
       </p>
       {article.imageUrl &&
