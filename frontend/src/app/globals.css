@@ -59,3 +59,17 @@ body {
     z-index: auto !important;
   }
 }
+
+/* ---- Newspaper book-flip page turn ------------------------------------
+ * newsleaf-fwd:  the leaf (current page) sweeps left around the spine,
+ *                revealing the next page underneath.
+ * newsleaf-back: the leaf (previous page) sweeps back from the left,
+ *                covering the current page. */
+@keyframes newsleaf-fwd {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(-180deg); }
+}
+@keyframes newsleaf-back {
+  from { transform: rotateY(-180deg); }
+  to { transform: rotateY(0deg); }
+}
