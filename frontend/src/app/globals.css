@@ -73,3 +73,35 @@ body {
   from { transform: rotateY(-180deg); }
   to { transform: rotateY(0deg); }
 }
+
+/* ---- Latest-newspaper showcase card -----------------------------------
+ * A mini front page that rises into view on the editions list. The
+ * animation uses `backwards` fill so the resting tilt (and the hover
+ * straighten) defined on the class itself keep working after it ends. */
+@keyframes latest-paper-in {
+  from {
+    opacity: 0;
+    transform: translateY(28px) rotate(-3deg) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-1deg) scale(1);
+  }
+}
+.latest-paper {
+  animation: latest-paper-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  transform: rotate(-1deg);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.latest-paper:hover {
+  transform: rotate(0deg) translateY(-4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .latest-paper {
+    animation: none;
+    transform: none;
+  }
+  .latest-paper:hover {
+    transform: none;
+  }
+}

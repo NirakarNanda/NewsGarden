@@ -36,11 +36,17 @@ export default function DeleteEditionButton({ editionId, title }: { editionId: s
   };
 
   return (
-    <span className="inline-flex items-center gap-2">
+    // stopPropagation: this button lives inside the edition row's <Link> —
+    // without it, clicking delete bubbles up and navigates into the edition.
+    <span className="inline-flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
       {error && <span className="text-xs text-red-300">{error}</span>}
       <button
         type="button"
-        onClick={() => void handleDelete()}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          void handleDelete();
+        }}
         disabled={deleting}
         title={confirming ? "Click again to confirm deletion" : `Delete "${title}"`}
         className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors disabled:opacity-60 ${
@@ -55,7 +61,11 @@ export default function DeleteEditionButton({ editionId, title }: { editionId: s
       {confirming && !deleting && (
         <button
           type="button"
-          onClick={() => setConfirming(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setConfirming(false);
+          }}
           className="rounded-lg px-2 py-1.5 text-xs text-[#8f97b8] hover:text-[#e6e9ff]"
         >
           Cancel

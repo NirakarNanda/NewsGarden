@@ -78,7 +78,38 @@ export default async function EditionsPage() {
             />
           </div>
         ) : (
-          <ul className="mt-8 space-y-3">
+          <>
+            {(() => {
+              const latest = [...editions]
+                .filter((e) => e.status === "published")
+                .sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+              if (!latest) return null;
+              return (
+                <Link
+                  href={`/edition/${latest.editionId}`}
+                  className="latest-paper group mt-8 block max-w-2xl rounded-md bg-[#f7f2e7] px-8 py-7 text-[#221c12] shadow-[0_18px_50px_rgba(0,0,0,0.45)] ring-1 ring-black/20 hover:shadow-[0_24px_60px_rgba(0,0,0,0.55)]"
+                >
+                  <p className="text-[11px] font-bold uppercase tracking-[0.3em] text-[#8a6d3b]">
+                    Latest newspaper — click to read
+                  </p>
+                  <p
+                    className="mt-2 text-4xl font-bold tracking-tight md:text-5xl"
+                    style={{ fontFamily: "var(--font-pixel)" }}
+                  >
+                    {latest.title}
+                  </p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.25em] text-[#221c12]/55">
+                    {formatDate(latest.date) || "Undated"} · {latest.pages}{" "}
+                    {latest.pages === 1 ? "page" : "pages"} · {latest.articles}{" "}
+                    {latest.articles === 1 ? "article" : "articles"}
+                  </p>
+                  <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#221c12]/80 transition-transform group-hover:translate-x-1">
+                    Open the paper <ArrowRight size={15} />
+                  </p>
+                </Link>
+              );
+            })()}
+            <ul className="mt-8 space-y-3">
             {editions.map((e) => (
               <li
                 key={e.editionId}
@@ -114,6 +145,7 @@ export default async function EditionsPage() {
               </li>
             ))}
           </ul>
+          </>
         )}
       </main>
     </div>
